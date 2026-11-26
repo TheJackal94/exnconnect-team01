@@ -76,7 +76,7 @@ function login(err){$('#who').innerHTML='';
  <form id="lf" novalidate><label>Email on your Exness account<input name="email" type="email" autocomplete="email" required></label>
  <label>One of your Exness account numbers<input name="account" inputmode="numeric" autocomplete="off" required placeholder="e.g. 16000537909"></label>
  ${err||''}<button class="or" type="submit">Open my dashboard</button></form>
- ${CFG.mode&&CFG.mode!=='live'&&CFG.demo_account?`<p class="note" style="margin-top:14px">Demo: use account <b>${esc(CFG.demo_account)}</b> with any email. In live mode Exness confirms the email and account belong to you.</p>`:''}
+ ${CFG.demo_login?`<p class="note" style="margin-top:14px">Presenting or just looking? Use the demo login: <b>${esc(CFG.demo_login.email)}</b> with account <b>${esc(CFG.demo_login.account)}</b>. It opens a sample client, not real data.</p>`:CFG.mode&&CFG.mode!=='live'&&CFG.demo_account?`<p class="note" style="margin-top:14px">Demo: use account <b>${esc(CFG.demo_account)}</b> with any email. In live mode Exness confirms the email and account belong to you.</p>`:''}
  <p class="note" style="margin-top:14px">We'll never ask for your Exness password or API keys.</p>
  <p class="note">Not with us yet? <a href="/landing/#join">Sign up</a> · Already trade with Exness? <a href="/landing/?path=switch#join">Switch to Trade Hour</a></p></div>`;
  $('#lf').addEventListener('submit',async e=>{e.preventDefault();const f=e.target,b=f.querySelector('button');if(!f.checkValidity()){return login('<p class="err" role="alert">Enter your email and an account number.</p>')}

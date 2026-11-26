@@ -272,7 +272,8 @@ def h_public_config(_):
         funded = [a for a in ds["accounts"] if next((c for c in ds["clients"] if c["uid"] == a["uid"] and c["stage"] != "registered"), None)]
         demo = funded[0]["acc"] if funded else None
     return {"brand": BRAND, "partner_link": partner_link(), "exd_amount": env("EXD_REWARD_AMOUNT"), "exd_terms": env("EXD_TERMS"),
-            "milestones": rewards.milestones(), "demo_account": demo, "mode": m}
+            "milestones": rewards.milestones(), "demo_account": demo, "mode": m,
+            "demo_login": {k: v for k, v in (demo_login() or {}).items() if k != "uid"} or None}
 
 
 def h_public_claim(body):
@@ -316,6 +317,27 @@ def _sessions() -> dict:
     return {k: v for k, v in s.items() if v.get("created", "") > cutoff}
 
 
+DEMO_EMAIL = "demo@tradehour.app"
+_MOCK_DS: dict = {}
+
+
+def mock_ds() -> dict:
+    """Built-in sample data set (never real clients), used for the demo login."""
+    if not _MOCK_DS:
+        _MOCK_DS.update(dataset.mock_dataset())
+    return _MOCK_DS
+
+
+def demo_login() -> dict | None:
+    """Fixed presenter login that opens a sample client, in every mode. DEMO_LOGIN=0 turns it off."""
+    if env("DEMO_LOGIN", "1") == "0":
+        return None
+    md = mock_ds()
+    c = next((x for x in md["clients"] if x["stage"] == "trading"), None)
+    acc = next((a["acc"] for a in md["accounts"] if c and a["uid"] == c["uid"]), None)
+    return {"email": DEMO_EMAIL, "account": acc, "uid": c["uid"]} if acc else None
+
+
 def h_client_login(body, ip=""):
     if not rate_ok(f"login:{ip}", 10):
         raise ApiError(429, "Too many attempts, try again in a minute")
@@ -323,8 +345,12 @@ def h_client_login(body, ip=""):
     account = "".join(ch for ch in str(body.get("account") or "") if ch.isdigit())
     if "@" not in email or not account:
         raise ApiError(400, "Enter your email and an Exness account number")
-    ds = get_ds()
-    if mode() == "live":
+    demo = demo_login()
+    sample = bool(demo and email == demo["email"] and account == demo["account"])
+    ds = mock_ds() if sample else get_ds()
+    if sample:
+        uid = demo["uid"]
+    elif mode() == "live":
         aff = _affiliation(email)
         if not aff["affiliated"]:
             raise ApiError(403, "not_affiliated", reason="not_affiliated")
@@ -342,7 +368,7 @@ def h_client_login(body, ip=""):
     token = secrets.token_urlsafe(24)
     s = _sessions()
     s[token] = {"uid": uid, "email": email, "accounts": [a["acc"] for a in ds["accounts"] if a["uid"] == uid] or [account],
-                "created": datetime.now().isoformat(timespec="seconds"), "demo": mode() != "live"}
+                "created": datetime.now().isoformat(timespec="seconds"), "demo": sample or mode() != "live", "sample": sample}
     write_json(SESSIONS_FILE, s)
     return {"token": token}
 
@@ -359,8 +385,8 @@ def _journal(uid: str) -> dict:
     return read_json(JOURNAL_DIR / f"{uid}.json", {"notes": {}, "manual": []})
 
 
-def _trades(accounts: list[str]) -> list[dict]:
-    m = mode()
+def _trades(accounts: list[str], sample: bool = False) -> list[dict]:
+    m = "mock" if sample else mode()
     try:
         if m == "mock":
             rows = rewards.mock_orders(accounts)
@@ -376,11 +402,11 @@ def _trades(accounts: list[str]) -> list[dict]:
 
 def h_client_me(_, headers):
     s = _session(headers)
-    ds = get_ds()
+    ds = mock_ds() if s.get("sample") else get_ds()
     c = next((x for x in ds["clients"] if x["uid"] == s["uid"]), {})
     lots, accs = rewards.client_lots(ds, s["uid"])
     j = _journal(s["uid"])
-    trades = _trades(accs or s["accounts"]) + j["manual"]
+    trades = _trades(accs or s["accounts"], bool(s.get("sample"))) + j["manual"]
     for t in trades:
         t.update(j["notes"].get(t["id"], {}))
     trades.sort(key=lambda t: t.get("close") or "", reverse=True)
@@ -396,7 +422,7 @@ def h_client_me(_, headers):
                                               "journaled": len(logged), "rules_pct": round(100 * sum(1 for t in logged if t["followed"]) / len(logged)) if logged else None,
                                               "wins": sum(1 for t in logged if t.get("result") == "win"), "losses": sum(1 for t in logged if t.get("result") == "loss")},
             "sync_note": ("Closed trades on your Exness accounts with Trade Hour (last 31 days) are loaded from our partner reports when you open this page."
-                          if mode() == "live" else "These are sample trades for the demo.")
+                          if mode() == "live" and not s.get("sample") else "These are sample trades for the demo.")
                          + " Exness doesn't share profit or loss, so add your P/L to each trade to see your metrics."}
 
 
