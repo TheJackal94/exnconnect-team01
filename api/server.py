@@ -395,7 +395,9 @@ def h_client_me(_, headers):
             "trades": trades[:150], "stats": {"week_trades": len(wk), "week_lots": round(sum(t["lots"] for t in wk), 2),
                                               "journaled": len(logged), "rules_pct": round(100 * sum(1 for t in logged if t["followed"]) / len(logged)) if logged else None,
                                               "wins": sum(1 for t in logged if t.get("result") == "win"), "losses": sum(1 for t in logged if t.get("result") == "loss")},
-            "sync_note": "Trades come in automatically from Exness through your Trade Hour partnership, usually the day after they close. No API key needed."}
+            "sync_note": ("Closed trades on your Exness accounts with Trade Hour (last 31 days) are loaded from our partner reports when you open this page."
+                          if mode() == "live" else "These are sample trades for the demo.")
+                         + " Exness doesn't share profit or loss, so add your P/L to each trade to see your metrics."}
 
 
 def h_client_journal(body, headers):
@@ -409,6 +411,8 @@ def h_client_journal(body, headers):
         entry.pop("result")
     if isinstance(body.get("risk"), (int, float)) and 0 <= body["risk"] <= 100:
         entry["risk"] = body["risk"]
+    if isinstance(body.get("pl"), (int, float)) and not isinstance(body.get("pl"), bool) and abs(body["pl"]) <= 1e7:
+        entry["pl"] = round(float(body["pl"]), 2)
     if isinstance(body.get("followed"), bool):
         entry["followed"] = body["followed"]
     tid = str(body.get("id") or "")

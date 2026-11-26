@@ -101,14 +101,43 @@ function render(){const tab=['journal','milestones','account'].includes(location
  <nav class="tabs" aria-label="Sections">${[['journal','Journal'],['milestones','Milestones'],['account','Account']].map(([k,l])=>`<a href="#${k}" class="${k===tab?'on':''}" ${k===tab?'aria-current="page"':''}>${l}</a>`).join('')}</nav>
  <div id="tab">${T[tab]()}</div>`;
  $('#out').onclick=()=>{TOKEN='';try{sessionStorage.removeItem('th_client')}catch(_){}ME=null;login()}}
+const money=n=>(n<0?'−$':n>0?'+$':'$')+Math.abs(n).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+const sumPL=a=>a.reduce((s,t)=>s+t.pl,0);
+function dash(){
+ const P=ME.trades.filter(t=>typeof t.pl==='number').sort((a,b)=>(a.close||'').localeCompare(b.close||''));
+ if(!P.length)return `<h2>Performance</h2><div class="card"><p style="margin:0">Add your P/L to a trade (<b>Add notes</b>) and your metrics appear here: total P/L, win rate, profit factor, your equity curve, and how you do when you follow your rules.</p>${ME.demo?'<p style="margin:12px 0 0"><button class="sm" id="demofill">Fill with sample results</button> <span class="note">Demo only</span></p>':''}</div>`;
+ const W=P.filter(t=>t.pl>0),L=P.filter(t=>t.pl<0),net=sumPL(P),gw=sumPL(W),gl=-sumPL(L);
+ const wr=W.length+L.length?Math.round(100*W.length/(W.length+L.length)):null,pf=gl?gw/gl:null;
+ const best=P.reduce((a,b)=>b.pl>a.pl?b:a),worst=P.reduce((a,b)=>b.pl<a.pl?b:a);
+ const F=P.filter(t=>t.followed===true),B=P.filter(t=>t.followed===false),avg=a=>a.length?sumPL(a)/a.length:null;
+ const cls=n=>n==null?'':n>=0?'ok':'bad',m=n=>n==null?'–':money(n);
+ const kpi=(v,l,c='')=>`<div class="kpi"><b class="${c}">${v}</b><span>${l}</span></div>`;
+ // equity curve
+ let c=0;const pts=[0,...P.map(t=>c+=t.pl)],w=600,h=150,pad=8,lo=Math.min(0,...pts),hi=Math.max(0,...pts),rng=hi-lo||1;
+ const X=i=>pad+(w-2*pad)*i/(pts.length-1||1),Y=v=>pad+(h-2*pad)*(hi-v)/rng;
+ const line=pts.map((v,i)=>`${X(i).toFixed(1)},${Y(v).toFixed(1)}`).join(' '),col=net>=0?'var(--ok)':'var(--red)';
+ const curve=`<svg viewBox="0 0 ${w} ${h}" style="width:100%;height:auto;display:block" role="img" aria-label="Cumulative P/L over ${P.length} trades, ending at ${money(net)}"><line x1="${pad}" x2="${w-pad}" y1="${Y(0)}" y2="${Y(0)}" stroke="var(--line)" stroke-width="2" stroke-dasharray="4 4"/><polygon points="${X(0)},${Y(0)} ${line} ${X(pts.length-1)},${Y(0)}" fill="${col}" opacity=".12"/><polyline points="${line}" fill="none" stroke="${col}" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/></svg>`;
+ // by symbol
+ const bs={};P.forEach(t=>bs[t.symbol]=(bs[t.symbol]||0)+t.pl);const syms=Object.entries(bs).sort((a,b)=>b[1]-a[1]).slice(0,6),mx=Math.max(...syms.map(s=>Math.abs(s[1])),1);
+ const bars=syms.map(([s,v])=>`<div style="display:grid;grid-template-columns:76px minmax(0,1fr) 92px;gap:10px;align-items:center;font-size:14px;margin:6px 0"><b>${esc(s)}</b><div class="meter"><i style="width:${Math.max(2,Math.round(100*Math.abs(v)/mx))}%;background:${v>=0?'var(--ok)':'var(--red)'}"></i></div><span class="n ${cls(v)}" style="text-align:right;font-variant-numeric:tabular-nums">${money(v)}</span></div>`).join('');
+ return `<h2>Performance <span class="note" style="font:500 13px Inter">${P.length} trade${P.length===1?'':'s'} with P/L logged</span></h2>
+ <div class="kpis" style="margin-bottom:12px">${kpi(money(net),'Total P/L',cls(net))}${kpi(wr==null?'–':wr+'%','Win rate')}${kpi(pf==null?(gw?'∞':'–'):pf.toFixed(2),'Profit factor',pf==null?'':pf>=1?'ok':'bad')}${kpi(`${m(avg(W))} <span class="note" style="font-size:.55em">/</span> ${m(avg(L))}`,'Avg win / avg loss')}</div>
+ <div class="kpis" style="margin-top:0">${kpi(money(best.pl),'Best trade · '+esc(best.symbol),cls(best.pl))}${kpi(money(worst.pl),'Worst trade · '+esc(worst.symbol),cls(worst.pl))}${kpi(m(avg(F)),`Avg when rules followed (${F.length})`,cls(avg(F)))}${kpi(m(avg(B)),`Avg when rules broken (${B.length})`,cls(avg(B)))}</div>
+ <div class="g2"><div class="card"><p style="margin:0 0 8px;font-weight:600">Equity curve <span class="note">cumulative P/L, oldest to newest</span></p>${curve}</div>
+ <div class="card"><p style="margin:0 0 4px;font-weight:600">P/L by symbol</p>${bars}</div></div>`}
+async function demoFill(b){b.disabled=true;b.textContent='Filling…';const S=['Break and retest','Range','Trend pullback','Session open','Zone alert'];let seed=7;const rnd=()=>(seed=(seed*9301+49297)%233280)/233280;
+ try{for(const t of ME.trades.slice(0,30)){const fo=rnd()<.72,win=rnd()<(fo?.58:.33),amt=Math.round((win?(fo?30+rnd()*110:20+rnd()*60):-(fo?15+rnd()*45:40+rnd()*120))*100)/100;
+  await api('/api/client/journal',{id:t.id,setup:S[Math.floor(rnd()*S.length)],risk:fo?1:2.5,followed:fo,pl:amt,result:amt>0?'win':'loss',note:''})}
+  ME=await api('/api/client/me');render();toast('Sample results added')}catch(x){toast(x.message);b.disabled=false}}
 const T={
 journal:()=>{const st=ME.stats,list=ME.trades.filter(t=>FILTER==='all'||!('followed' in t)),logged=ME.trades.filter(t=>'followed' in t),syms={};ME.trades.slice(0,50).forEach(t=>syms[t.symbol]=(syms[t.symbol]||0)+1);const top=Object.entries(syms).sort((a,b)=>b[1]-a[1])[0];
- return `<div class="info"><span class="dot"></span><div><b>Auto-sync is on.</b> ${esc(ME.sync_note)}</div></div>
+ return `<div class="info"><span class="dot" style="background:var(--bl)"></span><div><b>Your trades.</b> ${esc(ME.sync_note)}</div></div>
+ ${dash()}
  <div class="g2"><div><div class="toolbar"><button class="sm ${FILTER==='all'?'':'ghost'}" data-f="all">All (${ME.trades.length})</button><button class="sm ${FILTER==='todo'?'':'ghost'}" data-f="todo">Needs notes (${ME.trades.length-logged.length})</button><span style="flex:1"></span><button class="sm" id="add">Add a trade</button></div>
- <div class="scroll"><table class="stack"><thead><tr><th>Closed</th><th>Symbol</th><th class="n">Lots</th><th>Held</th><th>Setup</th><th>Rules</th><th>Result</th><th></th></tr></thead><tbody>
- ${list.slice(0,80).map(t=>`<tr><td>${esc(when(t.close))}${t.auto?'':' <span class="tag">manual</span>'}</td><td><b>${esc(t.symbol)}</b></td><td class="n">${fmt(t.lots,2)}</td><td>${esc(dur(t.open,t.close))}</td><td>${esc(t.setup||'')}${t.risk!=null?` <span class="note">${esc(t.risk)}%</span>`:''}</td><td>${'followed' in t?(t.followed?'<span class="ok">✓ followed</span>':'<span class="bad">✗ broke</span>'):''}</td><td>${t.result?esc({win:'Win',loss:'Loss',be:'Break-even'}[t.result]):''}</td><td><button class="sm ghost" data-edit="${esc(t.id)}">${'followed' in t?'Edit':'Add notes'}</button></td></tr>`).join('')||'<tr><td colspan="8" class="note">No trades yet. Closed trades appear here the day after.</td></tr>'}
+ <div class="scroll"><table class="stack"><thead><tr><th>Closed</th><th>Symbol</th><th class="n">Lots</th><th>Held</th><th>Setup</th><th>Rules</th><th>Result</th><th class="n">P/L</th><th></th></tr></thead><tbody>
+ ${list.slice(0,80).map(t=>`<tr><td>${esc(when(t.close))}${t.auto?'':' <span class="tag">manual</span>'}</td><td><b>${esc(t.symbol)}</b></td><td class="n">${fmt(t.lots,2)}</td><td>${esc(dur(t.open,t.close))}</td><td>${esc(t.setup||'')}${t.risk!=null?` <span class="note">${esc(t.risk)}%</span>`:''}</td><td>${'followed' in t?(t.followed?'<span class="ok">✓ followed</span>':'<span class="bad">✗ broke</span>'):''}</td><td>${t.result?esc({win:'Win',loss:'Loss',be:'Break-even'}[t.result]):''}</td><td class="n">${typeof t.pl==='number'?`<span class="${t.pl>=0?'ok':'bad'}">${money(t.pl)}</span>`:''}</td><td><button class="sm ghost" data-edit="${esc(t.id)}">${'followed' in t?'Edit':'Add notes'}</button></td></tr>`).join('')||'<tr><td colspan="9" class="note">No trades yet. Use Add a trade to log one.</td></tr>'}
  </tbody></table></div></div>
- <div><h2 style="margin-top:14px">This week's review</h2><div class="card"><p style="margin:0 0 6px"><b>${fmt(st.week_trades)}</b> trades · <b>${fmt(st.week_lots,2)}</b> lots</p><p style="margin:0 0 6px">Rules followed: <b>${st.rules_pct==null?'log a trade to see':st.rules_pct+'%'}</b></p><p style="margin:0 0 6px">Logged results: <b>${st.wins}</b> wins · <b>${st.losses}</b> losses</p>${top?`<p style="margin:0">Most traded: <b>${esc(top[0])}</b></p>`:''}
+ <div><h2 style="margin-top:14px">This week's review</h2><div class="card"><p style="margin:0 0 6px"><b>${fmt(st.week_trades)}</b> trades · <b>${fmt(st.week_lots,2)}</b> lots</p>${(()=>{const wk=new Date(Date.now()-7*864e5).toISOString(),p=ME.trades.filter(t=>typeof t.pl==='number'&&(t.close||'')>=wk);return p.length?`<p style="margin:0 0 6px">P/L this week: <b class="${sumPL(p)>=0?'ok':'bad'}">${money(sumPL(p))}</b></p>`:''})()}<p style="margin:0 0 6px">Rules followed: <b>${st.rules_pct==null?'log a trade to see':st.rules_pct+'%'}</b></p><p style="margin:0 0 6px">Logged results: <b>${st.wins}</b> wins · <b>${st.losses}</b> losses</p>${top?`<p style="margin:0">Most traded: <b>${esc(top[0])}</b></p>`:''}
  <p class="note" style="margin:12px 0 0">Ten minutes a week: pick one rule you broke and one thing that worked. Change one thing only.</p></div>
  <p class="note">The journal is for your own review. Trade Hour gives education and tools only, not advice. Trading CFDs carries a high risk of losing money.</p></div></div>`},
 milestones:()=>{const nx=next(),prevLots=nx?(ME.milestones[ME.milestones.indexOf(nx)-1]||{lots:0}).lots:0;
@@ -117,7 +146,7 @@ milestones:()=>{const nx=next(),prevLots=nx?(ME.milestones[ME.milestones.indexOf
  <div><h2>Next up</h2><div class="card">${nx?`<p style="margin:0 0 8px"><b>${fmt(nx.lots-ME.lots,1)} lots</b> to go for <b>${fmt(nx.exd)} EXD</b></p><div class="meter"><i style="width:${Math.round(nx.progress*100)}%"></i></div><p class="note" style="margin:8px 0 0">${fmt(ME.lots-prevLots,1)} of ${fmt(nx.lots-prevLots,1)} lots since your last milestone.</p>`:'<p style="margin:0">You\'ve reached every milestone. Nice work.</p>'}</div>
  <h2>Rewards</h2>${ME.rewards.length?`<div class="scroll"><table><thead><tr><th>Reward</th><th class="n">EXD</th><th>Status</th></tr></thead><tbody>${ME.rewards.map(r=>`<tr><td>${r.type==='signup'?'Sign-up reward':lotsTxt(r.milestone)}</td><td class="n">${fmt(r.amount)}</td><td><span class="tag ${r.status}">${statusTxt[r.status]||r.status}</span></td></tr>`).join('')}</tbody></table></div>`:'<p class="note">No rewards yet.</p>'}</div></div>`},
 account:()=>`<h2>Your accounts with Trade Hour</h2><div class="scroll"><table><thead><tr><th>Exness account</th></tr></thead><tbody>${ME.accounts.map(a=>`<tr><td>${esc(a)}</td></tr>`).join('')}</tbody></table></div>
- <h2>Connecting your trades</h2><div class="card"><p style="margin:0 0 8px"><b>No API key needed.</b> Because your account is with Trade Hour, Exness shares your closed trades and lots with us through our partner connection. That's how your journal and milestones fill in automatically.</p>
+ <h2>Connecting your trades</h2><div class="card"><p style="margin:0 0 8px"><b>No API key needed.</b> Because your account is with Trade Hour, Exness shares your closed trades and lots with us through our partner reports. That's how your journal and milestones are filled in.</p>
  <p style="margin:0 0 8px">That connection can't see your password, place trades, or move money. Exness doesn't include profit and loss, so you log the result yourself in the journal.</p>
  <p class="note" style="margin:0">Never share your Exness password or API keys with anyone, including us.</p></div>
  <p class="note" style="margin-top:16px">Questions? <a href="/landing/">Ask the Trade Hour assistant</a>.</p>`
@@ -125,7 +154,7 @@ account:()=>`<h2>Your accounts with Trade Hour</h2><div class="scroll"><table><t
 function editDialog(t){const d=$('#dlg'),isNew=!t;t=t||{};
  d.innerHTML=`<form method="dialog" id="ef"><h3 id="dlgT" style="font-size:20px">${isNew?'Add a trade':esc(t.symbol)+' · '+esc(when(t.close))}</h3>
  ${isNew?`<div class="row"><label>Symbol<input name="symbol" required maxlength="12" placeholder="XAUUSD"></label><label>Lots<input name="lots" type="number" step="0.01" min="0" placeholder="0.10"></label></div>`:''}
- <div class="row"><label>Setup<input name="setup" list="setups" maxlength="80" value="${esc(t.setup||'')}" placeholder="e.g. Break and retest"></label><label>Risk (% of account)<input name="risk" type="number" step="0.1" min="0" max="100" value="${t.risk??''}" placeholder="1"></label></div>
+ <div class="row"><label>Setup<input name="setup" list="setups" maxlength="80" value="${esc(t.setup||'')}" placeholder="e.g. Break and retest"></label><label>Risk (% of account)<input name="risk" type="number" step="0.1" min="0" max="100" value="${t.risk??''}" placeholder="1"></label><label>P/L (USD)<input name="pl" type="number" step="0.01" value="${t.pl??''}" placeholder="-25.50"></label></div>
  <datalist id="setups"><option>Break and retest</option><option>Range</option><option>Trend pullback</option><option>Session open</option><option>Zone alert</option></datalist>
  <div><span class="note" style="font-weight:600">Did you follow your rules?</span><div class="seg" data-k="followed"><button type="button" aria-pressed="${t.followed===true}" data-v="true">Yes</button><button type="button" aria-pressed="${t.followed===false}" data-v="false">No</button></div></div>
  <div><span class="note" style="font-weight:600">Result</span><div class="seg" data-k="result">${[['win','Win'],['loss','Loss'],['be','Break-even']].map(([v,l])=>`<button type="button" aria-pressed="${t.result===v}" data-v="${v}">${l}</button>`).join('')}</div></div>
@@ -135,12 +164,12 @@ function editDialog(t){const d=$('#dlg'),isNew=!t;t=t||{};
  $('#cx').onclick=()=>d.close();
  $('#ef').onsubmit=async e=>{e.preventDefault();const f=e.target,v=k=>d.querySelector(`.seg[data-k="${k}"] [aria-pressed="true"]`)?.dataset.v;
   const body={id:t.id||'',setup:f.setup.value.trim(),note:f.note.value.trim()};const r=parseFloat(f.risk.value);if(!isNaN(r))body.risk=r;
-  const fo=v('followed');if(fo)body.followed=fo==='true';const res=v('result');if(res)body.result=res;
+  const fo=v('followed');if(fo)body.followed=fo==='true';const res=v('result');if(res)body.result=res;const p=parseFloat(f.pl.value);if(!isNaN(p)){body.pl=p;if(!res)body.result=p>0?'win':p<0?'loss':'be'}
   if(isNew){body.symbol=f.symbol.value.trim();if(!body.symbol){f.symbol.focus();return}const l=parseFloat(f.lots.value);if(!isNaN(l))body.lots=l}
   try{await api('/api/client/journal',body);d.close();ME=await api('/api/client/me');render();toast('Saved to your journal')}catch(x){toast(x.message)}};
  d.showModal()}
 document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b||!ME)return;
- if(b.dataset.f){FILTER=b.dataset.f;render()}else if(b.dataset.edit){editDialog(ME.trades.find(t=>t.id===b.dataset.edit))}else if(b.id==='add')editDialog(null)});
+ if(b.id==='demofill'){demoFill(b)}else if(b.dataset.f){FILTER=b.dataset.f;render()}else if(b.dataset.edit){editDialog(ME.trades.find(t=>t.id===b.dataset.edit))}else if(b.id==='add')editDialog(null)});
 window.addEventListener('hashchange',()=>ME&&render());
 async function boot(){if(!TOKEN)return login();try{ME=await api('/api/client/me');render()}catch(x){TOKEN='';login(x.status===401?'':`<p class="err">${esc(x.message)}</p>`)}}
 fetch('/api/public/config').then(r=>r.ok?r.json():{}).then(c=>{CFG=c||{};boot()}).catch(()=>{CFG={};$('#app').innerHTML='<div class="login"><h1>Your Trade Hour dashboard</h1><p class="lede">The dashboard needs the Trade Hour server. Start it with <code>python api/server.py</code> and open <code>/client/</code>.</p></div>'});
