@@ -347,9 +347,9 @@ Trade Hour</a>
 <div id="stepsNew">
 <h3 class="h3">Start in three steps</h3>
 <ol class="steps">
-<li><b>Tell us where to send your tools.</b></li>
-<li><b>Open your Exness account</b> through our partner link, using the same email.</li>
-<li><b>Get your journal, indicator and EXD reward</b> once your account is verified and funded.</li>
+<li><b>Tap Sign up with Exness</b> to open your account through our partner link.</li>
+<li><b>Verify and fund your account</b> in your Exness Personal Area.</li>
+<li><b>Log in to your client dashboard</b> with the same email to unlock your journal, indicator and EXD reward.</li>
 </ol>
 </div>
 <div id="stepsSwitch" hidden>
@@ -359,7 +359,14 @@ Trade Hour</a>
 </div>
 </div>
 <div class="formcard rv d1">
-<div id="formWrap">
+<div id="newCard">
+<p class="mono kicker" style="margin:0 0 10px">// New to Exness</p>
+<h3 class="h3" style="margin-bottom:8px">Open your Exness account</h3>
+<p style="margin:0 0 20px;color:#4a5058">Sign up with Exness through the Trade Hour partner link. Your tools and <span data-exd>10</span> EXD reward unlock once your account is verified and funded.</p>
+<a id="signupBtn" href="https://one.toexness.com/a/ijfv29rud7" target="_blank" rel="noopener" class="btn pri" style="width:100%;min-height:56px;font-size:18px">Sign up with Exness <span class="arrow">→</span></a>
+<p style="margin:14px 0 0;font-size:13px;color:#5b6168">Trading CFDs carries a high risk of loss. Trade Hour gives education and tools, not advice. Already have an account? <a href="/client/">Log in to your dashboard</a>.</p>
+</div>
+<div id="formWrap" hidden>
 <form id="joinForm" style="display:flex;flex-direction:column;gap:14px" novalidate>
 <p id="formLead" style="margin:0;font-weight:600">Claim your tools and EXD reward</p>
 <label class="lbl">Your name<input name="name" required autocomplete="name" maxlength="80" class="inp" /></label>
@@ -376,7 +383,7 @@ Trade Hour</a>
 <p id="doneNew" style="margin:0;color:#4a5058">Next, open your Exness account through our partner link with the same email. Your tools and EXD reward unlock once it's verified and funded.</p>
 <p id="doneSwitch" hidden style="margin:0;color:#4a5058">Now ask Exness Support to move your account to Trade Hour (steps on the left). Once Exness confirms, log in to your client dashboard with the same email.</p>
 <div style="display:flex;flex-wrap:wrap;gap:10px">
-<a id="partnerLink" href="https://one.exnessonelink.com/a/ijfv29rud7" rel="noopener" class="btn dark">Open my Exness account</a>
+<a id="partnerLink" href="https://one.toexness.com/a/ijfv29rud7" rel="noopener" class="btn dark">Open my Exness account</a>
 <a href="/client/" class="ghostbtn">Client dashboard</a>
 </div>
 </div>
@@ -419,7 +426,7 @@ const q=new URLSearchParams(location.search);
 const campaign=(q.get('campaign')||q.get('c')||'').slice(0,60);
 // Exness attributes by link code, so a campaign gets its own link (?link=<code>). ?campaign= is only recorded on the claim.
 const code=(q.get('link')||'').replace(/[^A-Za-z0-9_-]/g,'');
-let LINK=code?'https://one.exnessonelink.com/a/'+code:$('partnerLink').href, SERVER=false, PATH='new';
+let LINK=code?'https://one.toexness.com/a/'+code:$('partnerLink').href, SERVER=false, PATH='new';
 
 /* Built-in answers for when no server is running. The server (engine/faq.py) is the source of truth. */
 let FAQ=[
@@ -439,10 +446,10 @@ let FAQ=[
 let STEPS=["Log in to your Exness Personal Area with the email you trade with.","Contact Exness Support (live chat in the Personal Area works best) and say you'd like to change your partner to Trade Hour. Give them our partner link: "+LINK,"Exness reviews the request and decides; they may ask you to confirm by email. While it's being processed your status shows as 'changing'.","Register your switch below so we can look out for it. Once Exness confirms, log in to your client dashboard with the same email to unlock your tools and EXD reward."];
 const renderSteps=()=>{$('switchList').innerHTML=STEPS.map(t=>`<li>${linkify(t)}</li>`).join('')};
 const linkify=t=>esc(t).replace(/(https:\/\/[^\s<]+)/g,'<a href="$1" target="_blank" rel="noopener">$1</a>');
-renderSteps();
+renderSteps();$('signupBtn').href=LINK;
 
 fetch('/api/public/config').then(r=>r.ok?r.json():null).then(c=>{if(!c)return;SERVER=true;
- if(c.partner_link&&!code)LINK=c.partner_link;
+ if(c.partner_link&&!code)LINK=c.partner_link;$('signupBtn').href=LINK;
  if(c.exd_amount){$('exdAmount').textContent=c.exd_amount+' EXD';document.querySelectorAll('[data-exd]').forEach(e=>e.textContent=c.exd_amount)}
  if(Array.isArray(c.milestones)&&c.milestones.length){const n=v=>Number(v).toLocaleString('en-US');
   $('msList').innerHTML=c.milestones.map((m,i)=>`<li style="--i:${i}"><span class="mono">Milestone ${i+1}</span><b>${n(m.lots)} lot${m.lots===1?'':'s'}</b><em>+${n(m.exd)} EXD</em></li>`).join('');
@@ -452,7 +459,7 @@ fetch('/api/public/faq').then(r=>r.ok?r.json():null).then(d=>{if(!d)return;STEPS
  FAQ=d.faq.map(x=>({q:x.q,k:x.q,a:x.a}))}).catch(()=>{});
 
 /* ---------- New vs existing ---------- */
-function choose(path,openChat){PATH=path;document.querySelectorAll('.opt').forEach(o=>{const on=o.dataset.path===path;o.classList.toggle('on',on);o.setAttribute('aria-checked',on)});
+function choose(path,openChat){PATH=path;$('newCard').hidden=path!=='new';$('formWrap').hidden=path==='new';$('doneWrap').hidden=true;document.querySelectorAll('.opt').forEach(o=>{const on=o.dataset.path===path;o.classList.toggle('on',on);o.setAttribute('aria-checked',on)});
  $('stepsNew').hidden=path!=='new';$('stepsSwitch').hidden=path!=='switch';
  $('formLead').textContent=path==='new'?'Claim your tools and EXD reward':"Tell us you're switching";
  $('emailLbl').textContent=path==='new'?'Email (use the same one for Exness)':'The email on your Exness account';

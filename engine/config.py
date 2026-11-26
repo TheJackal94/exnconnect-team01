@@ -39,11 +39,19 @@ def private_key_path() -> Path:
     return kp if kp.is_absolute() else (ROOT / kp).resolve()
 
 
+def private_key_material() -> str:
+    """EXN_PRIVATE_KEY (PEM text or Exness hex; handy as a Codespaces secret) wins over the key file."""
+    if env("EXN_PRIVATE_KEY").strip():
+        return env("EXN_PRIVATE_KEY")
+    p = private_key_path()
+    return p.read_text() if p.exists() else ""
+
+
 def live_configured() -> bool:
-    """Live mode needs a public key and a readable private key, and MOCK must not be forced."""
+    """Live mode needs an API key and a private key, and MOCK must not be forced."""
     if env("MOCK", "").lower() in ("1", "true", "yes"):
         return False
-    return env("EXN_API_KEY").startswith("exnsk_") and private_key_path().exists()
+    return env("EXN_API_KEY").startswith("exnsk_") and bool(private_key_material().strip())
 
 
 SNAPSHOT = DATA_DIR / "snapshot.json"

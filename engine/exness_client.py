@@ -39,16 +39,28 @@ class ExnessError(Exception):
         super().__init__(f"{status} on {path}: {payload}{' (' + hint + ')' if hint else ''}")
 
 
+def load_private_key(material: bytes | str) -> Ed25519PrivateKey:
+    """Accepts a PKCS#8 PEM (own key pair) or the hex private_key Exness shows when it generates the pair
+    (128 hex chars = 32-byte seed + 32-byte public key; a bare 64-char seed also works)."""
+    raw = material.decode() if isinstance(material, bytes) else material
+    raw = raw.strip().replace("\\n", "\n")
+    if "BEGIN" in raw:
+        key = serialization.load_pem_private_key(raw.encode(), password=None)
+        if not isinstance(key, Ed25519PrivateKey):
+            raise ValueError("Exness requires an Ed25519 private key")
+        return key
+    hexs = "".join(raw.split())
+    if len(hexs) in (64, 128) and all(c in "0123456789abcdefABCDEF" for c in hexs):
+        return Ed25519PrivateKey.from_private_bytes(bytes.fromhex(hexs)[:32])
+    raise ValueError("Private key must be a PKCS#8 PEM or the 128-character hex key from Exness Key Management")
+
+
 class ExnessClient:
     def __init__(self, api_key: str, private_key_pem: bytes | str, host: str = "https://api.exness.com", timeout: int = 20):
         self.api_key = api_key
         self.host = host.rstrip("/")
         self.timeout = timeout
-        pem = private_key_pem.encode() if isinstance(private_key_pem, str) else private_key_pem
-        key = serialization.load_pem_private_key(pem, password=None)
-        if not isinstance(key, Ed25519PrivateKey):
-            raise ValueError("Exness requires an Ed25519 private key (PKCS#8 PEM)")
-        self.key = key
+        self.key = load_private_key(private_key_pem)
         self.session = requests.Session()
 
     @classmethod

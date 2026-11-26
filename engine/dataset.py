@@ -25,7 +25,7 @@ from datetime import date, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
-from config import BRAND, DATA_DIR, env
+from config import BRAND, DATA_DIR, SNAPSHOT as SNAPSHOT_FILE, env
 
 PLATFORMS = ["TikTok", "YouTube", "Instagram", "Website", "Telegram", "WhatsApp", "X", "Facebook"]
 META_FILE = DATA_DIR / "campaign_meta.json"  # platform per campaign_code, set when created in our UI
@@ -263,7 +263,7 @@ def live_dataset(client, samples: dict | None = None) -> dict:
     wallet = getattr(client, "exd_wallet", lambda: None)()
 
     default = next((l for l in links if l.get("is_default")), links[0] if links else {})
-    link = _abs_link(default.get("url") or (summary.get("default_link") if isinstance(summary, dict) else "")) or env("PARTNER_LINK", "")
+    link = env("PARTNER_LINK", "") or _abs_link(default.get("url") or (summary.get("default_link") if isinstance(summary, dict) else ""))
     tier_list = rows(tiers_raw) or (tiers_raw.get("tiers", []) if isinstance(tiers_raw, dict) else [])
     tiers = [{"n": str(pick(t, "tier.name", "?")), "clients": int(num(pick(t, "tier.clients"))), "vol": num(pick(t, "tier.vol"))}
              for t in tier_list if isinstance(t, dict)]
@@ -276,6 +276,26 @@ def live_dataset(client, samples: dict | None = None) -> dict:
     partner = {"name": str(pick(summary, "sum.name") or f"{BRAND} Partners"), "id": str(pick(summary, "sum.id", ""))[:8],
                "tier": cur or "—", "next": nxt, "link": link, "permissions": perms,
                "wallet_account": next((a.get("account") for a in (summary.get("accounts") or []) if a.get("account_type") == "partner"), "") if isinstance(summary, dict) else ""}
+
+    # EXD wallet: the REST API has no EXD wallet endpoint (only the Exness connector reads it), so live mode
+    # falls back to the last captured value in the snapshot, dated.
+    if wallet is None and SNAPSHOT_FILE.exists():
+        try:
+            snap = json.loads(SNAPSHOT_FILE.read_text())
+            if snap.get("exd_wallet"):
+                wallet = {**snap["exd_wallet"], "as_of": str(snap.get("captured", ""))[:10]}
+        except (OSError, ValueError):
+            pass
+    # USD partner wallet = the partner account that receives rewards. Live balance via the Payments API
+    # (needs a key with payments read scope); the summary's reward total comes with partnership read.
+    sr = summary.get("summary_reward") if isinstance(summary, dict) else None
+    pw = {"account": partner["wallet_account"], "balance": None, "currency": "USD",
+          "reward_total": num(sr.get("amount")) if isinstance(sr, dict) else None,
+          "reward_currency": (sr.get("currency") if isinstance(sr, dict) else None) or "USD", "live": False}
+    if pw["account"] and hasattr(client, "balance"):
+        b = s(lambda: client.balance(pw["account"]), "accounts/{partner account}/balance")
+        if isinstance(b, dict) and b.get("balance") is not None:
+            pw.update(balance=num(b["balance"]), currency=b.get("currency") or "USD", live=True)
 
     meta = load_meta()
     perf_by = {}
@@ -330,7 +350,7 @@ def live_dataset(client, samples: dict | None = None) -> dict:
     ds = {"mode": "live", "synced": datetime.now().isoformat(timespec="minutes"), "partner": partner,
           "campaigns": campaigns, "clients": clients, "accounts": accounts, "subpartners": subs, "rebates": rebates,
           "payments": payments, "tiers": tiers, "perf": perf, "byday": byday, "warnings": W,
-          "exd_wallet": wallet, "funnel_sample": False}
+          "exd_wallet": wallet, "partner_wallet": pw, "funnel_sample": False}
     # A partner with no tracked campaign links has no content funnel yet. For the demo, show clearly-labelled
     # sample campaigns in the Copilot funnel only (DEMO_FUNNEL=0 turns this off). Real clients stay real.
     if not any(c["clicks"] or c["reg"] for c in campaigns) and env("DEMO_FUNNEL", "1") != "0":

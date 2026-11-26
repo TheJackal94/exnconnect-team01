@@ -97,7 +97,7 @@ let BYDAY=[...Array(14)].map((_,i)=>({d:`11-${String(13+i).padStart(2,'0')}`,n:M
 CLAIMS=[{id:"demo1",name:"Thabo",email:"thabo@example.com",country:"South Africa",created:"2026-11-25T09:12",status:"waiting_signup"},{id:"demo2",name:"Amara",email:"amara@example.com",country:"Nigeria",created:"2026-11-24T18:40",status:"ready",affiliated:true,accounts:["51180412"]}];
 let T={};
 const sum=(a,k)=>a.reduce((s,c)=>s+(+c[k]||0),0);
-let F={},FUNNEL_SAMPLE=false,WALLET={current_balance:"300.00",currency:"EXD",sample:true},REWARDS=[],MILESTONES=[{lots:1,exd:2},{lots:10,exd:5},{lots:50,exd:10},{lots:100,exd:20},{lots:250,exd:40}],SIGNUP_AMT='',SEL=new Set();
+let PW=null,F={},FUNNEL_SAMPLE=false,WALLET={current_balance:"300.00",currency:"EXD",sample:true},REWARDS=[],MILESTONES=[{lots:1,exd:2},{lots:10,exd:5},{lots:50,exd:10},{lots:100,exd:20},{lots:250,exd:40}],SIGNUP_AMT='',SEL=new Set();
 // T = real client numbers (overview, tiers). F = content funnel (Copilot), which may be labelled sample campaigns.
 const totals=()=>{const byCl=CL.length>0;T={clicks:sum(CAMP,'clicks'),reg:byCl?CL.length:sum(CAMP,'reg'),fund:byCl?CL.filter(c=>c.stage!=="registered").length:sum(CAMP,'fund'),act:byCl?CL.filter(c=>c.stage==="trading").length:sum(CAMP,'act'),reward:sum(CAMP,'reward'),lots:sum(ACC,'lots')};
  F=sum(CAMP,'reg')>0?{clicks:sum(CAMP,'clicks'),reg:sum(CAMP,'reg'),fund:sum(CAMP,'fund'),act:sum(CAMP,'act')}:{...T}};
@@ -105,7 +105,7 @@ function sampleRewards(){const out=[];CL.filter(c=>c.stage!=='registered').slice
 totals();REWARDS=sampleRewards();
 function load(d){P=d.partner;CAMP=d.campaigns;CL=d.clients;ACC=d.accounts;SUB=d.subpartners;REB=d.rebates;PAY=d.payments;TIERS=d.tiers;PERF=d.perf;BYDAY=d.byday;
  BRIEF=d.brief;BRIEF_SRC=d.brief_source;CLAIMS=d.claims||[];MODE=d.mode;SYNCED=d.synced;WARN=d.warnings||[];DRAFTS[0]=d.nudge||DRAFTS[0];
- FUNNEL_SAMPLE=!!d.funnel_sample;WALLET=d.exd_wallet||null;REWARDS=d.rewards||[];MILESTONES=d.milestones||MILESTONES;SIGNUP_AMT=d.signup_amount||'';totals();paintStatus()}
+ FUNNEL_SAMPLE=!!d.funnel_sample;WALLET=d.exd_wallet||null;PW=d.partner_wallet||null;REWARDS=d.rewards||[];MILESTONES=d.milestones||MILESTONES;SIGNUP_AMT=d.signup_amount||'';totals();paintStatus()}
 function paintStatus(){const live=MODE==='live',t=(SYNCED||'').slice(11,16);
  const snap=MODE==='snapshot';$('#status').innerHTML=`<span class="dot ${API&&(live||snap)?'':'mock'}"></span>${API?(live?'Exness Partnership API · synced '+esc(t):snap?'Real data snapshot · '+esc((SYNCED||'').slice(5,10))+' '+esc(t)+' (Exness connector)':'Server on sample data · '+esc(t)):'Sample data (no server)'}`;
  $('#sync').hidden=!API;$('#pname').textContent=P.name;document.querySelectorAll('nav .ext,nav .sep-ext').forEach(x=>x.hidden=!API);
@@ -127,6 +127,15 @@ function funnelChart(svg){let st=[["Clicks",F.clicks],["Sign-ups",F.reg],["Funde
 function ring(svg,p,label){const W=svg.clientWidth,H=svg.clientHeight,R=Math.min(W,H)/2-14,cx=W/2,cy=H/2,a=2*Math.PI*Math.min(p,.9999),x=cx+R*Math.sin(a),y=cy-R*Math.cos(a);
  svg.innerHTML=`<circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="var(--line)" stroke-width="16"/><path d="M${cx} ${cy-R} A${R} ${R} 0 ${a>Math.PI?1:0} 1 ${x} ${y}" fill="none" stroke="var(--or)" stroke-width="16" stroke-linecap="round"/><text x="${cx}" y="${cy+4}" text-anchor="middle" font-size="30" font-weight="800" font-family="Archivo" fill="var(--ink)">${Math.round(Math.min(p,1)*100)}%</text><text x="${cx}" y="${cy+26}" text-anchor="middle" font-size="13" fill="var(--mut)">${esc(label)}</text>`}
 
+function wallets(){const cur=c=>c&&c!=='USD'?' '+c:'',money=(v,c)=>v==null?'—':(c&&c!=='USD'?fmt(v,2)+' '+c:'$'+Number(v).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}));
+ const live=PW&&PW.live,bal=WALLET?parseFloat(WALLET.current_balance):null;
+ const tag=t=>`<span class="tag" style="font-size:11px;margin-left:6px;vertical-align:middle">${t}</span>`;
+ return `<div class="kpis">
+ <div class="kpi"><b>${money(PW&&PW.balance,PW&&PW.currency)}</b><span>Partner wallet${PW&&PW.account?' · '+esc(PW.account):''}${live?tag('<span class="dot" style="width:7px;height:7px;display:inline-block;margin-right:4px"></span>live'):tag(MODE==='live'?'needs payments scope':'live only')}</span></div>
+ <div class="kpi"><b>${money(PW&&PW.reward_total,PW&&PW.reward_currency)}</b><span>Total reward earned${PW&&PW.reward_total!=null&&MODE==='live'?tag('live'):''}</span></div>
+ <div class="kpi"><b>${bal==null||isNaN(bal)?'—':fmt(bal)+' EXD'}</b><span>EXD wallet${WALLET&&WALLET.as_of?tag('as of '+esc(WALLET.as_of)):WALLET&&WALLET.sample?tag('sample'):''}</span></div>
+ <div class="kpi"><b>${usd(last(PERF).reward||0)}</b><span>Reward this month</span></div></div>`}
+
 /* ---------- Views ---------- */
 const rr=c=>c.clicks?c.reg/c.clicks:0;
 const sortedCamp=()=>[...CAMP].sort((a,b)=>F.clicks?rr(b)-rr(a):b.reg-a.reg);
@@ -137,6 +146,7 @@ function brief(){if(BRIEF)return BRIEF;const best=sortedCamp()[0],v=viral();if(!
  return `Morning brief · ${P.name}\n\n${fmt(F.clicks)} clicks → ${fmt(F.reg)} sign-ups → ${fmt(F.fund)} funded → ${fmt(F.act)} trading\n\nWorks: "${best.name}" converts ${pct(best.reg,best.clicks)}% of clicks.\nLeaks: "${v.name}" has the most clicks (${fmt(v.clicks)}) but ${pct(v.reg,v.clicks)}% sign up.\n\nToday:\n1. Make two more tool-led posts like "${best.name}".\n2. Add the calculator call-to-action to "${v.name}".\n3. ${dead.length?'Pause '+dead.map(d=>d.name).join(', ')+'.':'Keep the platform mix.'}\n\n${fmt(stalled().length)} sign-ups haven't funded. An education-only lesson is drafted and waiting for your approval.`}
 const V={
 overview:()=>{const best=sortedCamp()[0],p1=last(PERF),p0=last(PERF,2);return head(`${fmt(T.act)} active traders, ${usd(p1.reward)} reward this month`,`${p0.reward?`${p1.reward>=p0.reward?'Up':'Down'} ${Math.abs(Math.round(100*(p1.reward/p0.reward-1)))}% on last month. `:''}${stalled().length?`Your biggest lever: <span class="leak">${fmt(stalled().length)} sign-ups who never funded.</span>`:'Every sign-up has funded. Next lever: more tracked content.'} <a href="#copilot">Open Funnel Copilot</a>`,"GET /v1/partnership/partner/summary · /reports/ib/performance")
+ +wallets()
  +kpis([["Clients",fmt(T.reg)],["Funded",fmt(T.fund)],["Lots traded",fmt(Math.round(T.lots))],["Tier",P.tier]])
  +`<div class="g2"><div><h2>Reward by month</h2>${chart('ov1',s=>barsChart(s,PERF,'reward',usd,'var(--or)'))}</div><div><h2>Your partner link</h2><div class="card"><div class="link">${esc(P.link)}</div><div class="toolbar"><button data-copy="${esc(P.link)}">Copy link</button><a class="btn ghost" href="#campaigns">New campaign</a></div><p class="note">Partner ID ${esc(P.id)}${P.permissions?.length?' · permissions: '+P.permissions.map(esc).join(', '):''}</p></div>${best?`<h2>Best converter</h2><div class="card"><b>${esc(best.name)}</b>${best.sample?' <span class="tag">sample</span>':''}<p class="note" style="margin:4px 0 0">${esc(best.platform)} · ${pct(best.reg,best.clicks)}% click→sign-up · ${fmt(best.act)} trading</p></div>`:''}</div></div>`},
 copilot:()=>{const c=sortedCamp(),best=c[0],v=viral(),mr=Math.max(...c.map(rr),.0001),st=stalled(),x=best&&v&&rr(v)?Math.round(rr(best)/rr(v)):0;

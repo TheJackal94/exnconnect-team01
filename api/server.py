@@ -72,7 +72,7 @@ def settings() -> dict:
 
 def partner_link() -> str:
     ds = STATE["ds"]
-    return (ds and ds["partner"].get("link")) or env("PARTNER_LINK", "https://one.exnessonelink.com/a/ijfv29rud7")
+    return env("PARTNER_LINK") or (ds and ds["partner"].get("link")) or "https://one.toexness.com/a/ijfv29rud7"
 
 
 def get_ds(force: bool = False) -> dict:
