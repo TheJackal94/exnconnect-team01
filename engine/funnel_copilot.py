@@ -19,7 +19,7 @@ from pathlib import Path
 import requests
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from config import BRAND, DATA_DIR, SNAPSHOT, data_mode, env, live_configured, private_key_material  # noqa: E402
+from config import BRAND, DATA_DIR, SNAPSHOT, data_mode, env, live_configured, private_key_material, api_key  # noqa: E402
 import dataset  # noqa: E402
 
 STALLED_DAYS = 3
@@ -33,7 +33,7 @@ def make_client():
     if data_mode() == "snapshot":
         return dataset.SnapshotClient(SNAPSHOT)
     from exness_client import ExnessClient
-    return ExnessClient(env("EXN_API_KEY"), private_key_material(), env("EXN_HOST", "https://api.exness.com"))
+    return ExnessClient(api_key(), private_key_material(), env("EXN_HOST", "https://api.exness.com"))
 
 
 def mock_reports() -> dict:

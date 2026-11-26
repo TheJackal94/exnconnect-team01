@@ -294,8 +294,10 @@ def live_dataset(client, samples: dict | None = None) -> dict:
           "reward_currency": (sr.get("currency") if isinstance(sr, dict) else None) or "USD", "live": False}
     if pw["account"] and hasattr(client, "balance"):
         b = s(lambda: client.balance(pw["account"]), "accounts/{partner account}/balance")
-        if isinstance(b, dict) and b.get("balance") is not None:
-            pw.update(balance=num(b["balance"]), currency=b.get("currency") or "USD", live=True)
+        b = b.get("data", b) if isinstance(b, dict) and isinstance(b.get("data"), dict) else b
+        amt = b.get("amount", b.get("balance")) if isinstance(b, dict) else None  # live API returns {amount, currency}
+        if amt is not None:
+            pw.update(balance=num(amt), currency=b.get("currency") or "USD", live=True)
 
     meta = load_meta()
     perf_by = {}

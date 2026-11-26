@@ -27,7 +27,7 @@ from urllib.parse import urlparse
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "engine"))
 
-from config import BRAND, DATA_DIR, data_mode, env  # noqa: E402
+from config import BRAND, DATA_DIR, api_key, data_mode, env  # noqa: E402
 import dataset  # noqa: E402
 import faq  # noqa: E402
 import funnel_copilot as fc  # noqa: E402
@@ -120,7 +120,7 @@ def h_status(_):
             "claude": bool(env("ANTHROPIC_API_KEY")), "model": env("CLAUDE_MODEL", "claude-sonnet-5-5"),
             "telegram": bool(env("TG_BOT_TOKEN") and chat_id()), "telegram_clients": bool(env("TG_BOT_TOKEN") and chat_id("client")),
             "exd": {"signup_amount": env("EXD_REWARD_AMOUNT"), "wallet": ds.get("exd_wallet"), "milestones": rewards.milestones()},
-            "api_key_hint": (env("EXN_API_KEY")[:10] + "…") if env("EXN_API_KEY") else "", "settings": settings()}
+            "api_key_hint": (api_key()[:10] + "…") if api_key() else "", "settings": settings()}
 
 
 def h_dashboard(q):
