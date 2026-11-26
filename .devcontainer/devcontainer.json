@@ -1,0 +1,11 @@
+{
+  "name": "Trade Hour",
+  "image": "mcr.microsoft.com/devcontainers/python:3.12",
+  "containerEnv": { "HOST": "0.0.0.0", "PORT": "8787" },
+  "postCreateCommand": "pip install -r requirements.txt && ([ -f .env ] || cp .env.example .env)",
+  "postAttachCommand": "nohup python api/server.py > /tmp/server.log 2>&1 &",
+  "forwardPorts": [8787],
+  "portsAttributes": {
+    "8787": { "label": "Trade Hour", "onAutoForward": "openBrowser" }
+  }
+}

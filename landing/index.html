@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Trade Hour</title>
+<meta name="description" content="Trade in under an hour a day. A free trading journal and terminal indicator from Trade Hour, an independent Exness partner. Education and tools only.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;min-width:0}html{scroll-behavior:smooth}
+body{margin:0;background:#ffffff;overflow-x:clip}
+a{color:#e8501a}a:hover{color:#b83d10}
+input,select{font:16px Inter,sans-serif}
+input:focus-visible,select:focus-visible,button:focus-visible,a:focus-visible{outline:3px solid #e8501a;outline-offset:2px}
+button[disabled]{opacity:.6;cursor:default}
+.err{color:#c8321f;font-size:14px;margin:0}
+.choose{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:16px}
+.opt{all:unset;box-sizing:border-box;cursor:pointer;display:grid;gap:6px;padding:22px;border:2px solid #e6e8eb;border-radius:16px;background:#fff;font:16px/1.5 Inter,sans-serif;color:#4a5058}
+.opt b{font:700 22px 'Space Grotesk',sans-serif;color:#111418}.opt.on{border-color:#e8501a;background:#fff6f2}.opt:focus-visible{outline:3px solid #e8501a;outline-offset:2px}
+.h3{margin:0 0 16px;font:700 24px 'Space Grotesk',sans-serif}.steps{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:14px;color:#4a5058}.steps b{color:#111418}
+.lbl{display:grid;gap:6px;font-size:14px;font-weight:600}.inp{min-height:48px;padding:0 14px;border-radius:10px;border:1px solid #c9ced4;background:#fff;color:#111418}
+.cta{min-height:52px;border:0;border-radius:12px;background:#e8501a;color:#fff;font:600 17px Inter,sans-serif;cursor:pointer}
+.dark{background:#111418;color:#fff!important;text-decoration:none;padding:15px 22px;border-radius:12px;font-weight:600}.ghostbtn{border:1px solid #111418;color:#111418!important;text-decoration:none;padding:14px 20px;border-radius:12px;font-weight:600}
+.linkbtn{all:unset;cursor:pointer;color:#b83d10;font-weight:600;text-decoration:underline}.linkbtn:focus-visible{outline:3px solid #e8501a}
+/* chat */
+#chatBtn{position:fixed;right:18px;bottom:18px;z-index:20;display:flex;align-items:center;gap:8px;min-height:52px;padding:0 18px;border:0;border-radius:26px;background:#111418;color:#fff;font:600 16px Inter,sans-serif;cursor:pointer;box-shadow:0 6px 24px rgba(0,0,0,.18)}
+#chat{position:fixed;right:18px;bottom:82px;z-index:21;width:min(400px,calc(100vw - 32px));height:min(600px,calc(100vh - 110px));display:flex;flex-direction:column;background:#fff;border:1px solid #e6e8eb;border-radius:18px;box-shadow:0 12px 40px rgba(0,0,0,.2);font:15px/1.5 Inter,sans-serif;color:#111418;overflow:hidden}
+#chat[hidden]{display:none}
+.ch-head{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:14px 16px;background:#111418;color:#fff}.ch-head b{font:700 17px 'Space Grotesk',sans-serif}
+.ch-x{all:unset;cursor:pointer;width:36px;height:36px;display:grid;place-items:center;border-radius:8px;font-size:22px}.ch-x:focus-visible{outline:2px solid #ff7a45}
+#chatLog{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px;background:#f4f6f8}
+.msg{max-width:88%;padding:10px 13px;border-radius:14px;white-space:pre-wrap;overflow-wrap:anywhere}.msg.bot{background:#fff;border:1px solid #e6e8eb;border-top-left-radius:4px;align-self:flex-start}.msg.me{background:#e8501a;color:#fff;border-top-right-radius:4px;align-self:flex-end}
+.msg a{color:#b83d10}.chips{display:flex;flex-wrap:wrap;gap:6px}.chip{all:unset;cursor:pointer;font-size:13px;font-weight:600;padding:7px 11px;border-radius:16px;border:1px solid #e8501a;color:#b83d10;background:#fff}.chip:focus-visible{outline:2px solid #e8501a}
+.ch-form{display:flex;gap:8px;padding:12px;border-top:1px solid #e6e8eb}.ch-form input{flex:1;min-height:44px;padding:0 12px;border-radius:10px;border:1px solid #c9ced4}.ch-form button{min-height:44px;padding:0 16px;border:0;border-radius:10px;background:#e8501a;color:#fff;font:600 15px Inter,sans-serif;cursor:pointer}
+.ch-foot{font-size:11px;color:#5b6168;padding:0 12px 10px}
+.typing{opacity:.6;font-style:italic}
+</style></head><body>
+<div style="font-family: Inter, system-ui, sans-serif; color: #111418; background: #ffffff; font-size: 17px; line-height: 1.55">
+
+<header style="max-width: 1200px; margin: 0 auto; padding: 20px 24px; display: flex; flex-wrap: wrap; gap: 16px; align-items: center; justify-content: space-between">
+<a href="#top" style="display: flex; align-items: center; gap: 10px; color: #111418; text-decoration: none; font: 700 22px 'Space Grotesk', sans-serif">
+<svg width="34" height="34" viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="18" fill="none" stroke="#111418" stroke-width="3"></circle><path d="M20 20 L20 2 A18 18 0 0 1 38 20 Z" fill="#e8501a"></path><path d="M20 9v11l7 5" stroke="#111418" stroke-width="3" fill="none" stroke-linecap="round"></path></svg>
+Trade Hour</a>
+<nav style="display: flex; flex-wrap: wrap; gap: 22px; align-items: center; font-size: 15px; font-weight: 500">
+<a href="#tools" style="color: #111418; text-decoration: none">Tools</a>
+<a href="#hour" style="color: #111418; text-decoration: none">Your hour</a>
+<a href="#reward" style="color: #111418; text-decoration: none">EXD reward</a>
+<a href="/client/" style="color: #111418; text-decoration: none">Client login</a>
+<a href="#join" style="background: #111418; color: #ffffff; text-decoration: none; padding: 11px 18px; border-radius: 10px; font-weight: 600">Get started</a>
+</nav>
+</header>
+
+<section id="top" style="max-width: 1200px; margin: 0 auto; padding: 40px 24px 72px; display: flex; flex-wrap: wrap; gap: 48px; align-items: center">
+<div style="flex: 1 1 460px; min-width: 0">
+<p style="margin: 0 0 14px; font-weight: 600; color: #b83d10">For people with a full-time life</p>
+<h1 style="margin: 0; font: 700 clamp(40px, 6vw, 72px)/1.02 'Space Grotesk', sans-serif; letter-spacing: -0.02em">Trade in under an hour a day.</h1>
+<p style="margin: 22px 0 0; font-size: 20px; color: #4a5058; max-width: 34ch">You don't have time to watch charts all day. Our tools do the scanning and the record-keeping, so your hour goes on decisions.</p>
+<div style="display: flex; flex-wrap: wrap; gap: 12px; margin-top: 30px">
+<a href="#join" style="background: #e8501a; color: #ffffff; text-decoration: none; padding: 15px 24px; border-radius: 12px; font-weight: 600">Claim your tools and EXD reward</a>
+<a href="#tools" style="border: 1px solid #111418; color: #111418; text-decoration: none; padding: 15px 24px; border-radius: 12px; font-weight: 600">See the tools</a>
+</div>
+<p style="margin: 18px 0 0; font-size: 13px; color: #5b6168">Trading CFDs involves a high risk of loss. Education and tools only, not advice.</p>
+</div>
+<div style="flex: 1 1 420px; min-width: 0; display: flex; justify-content: center">
+<svg viewBox="0 0 440 440" style="width: 100%; max-width: 460px; height: auto" role="img" aria-label="A one-hour clock split into plan, trade, journal and review">
+<circle cx="220" cy="220" r="200" fill="#f4f6f8"></circle>
+<path d="M220 220 L220 40 A180 180 0 0 1 375.9 130 Z" fill="#1b3a5c"></path>
+<path d="M220 220 L375.9 130 A180 180 0 0 1 64.1 310 Z" fill="#e8501a"></path>
+<path d="M220 220 L64.1 310 A180 180 0 0 1 64.1 130 Z" fill="#ffb08f"></path>
+<path d="M220 220 L64.1 130 A180 180 0 0 1 220 40 Z" fill="#9db7d1"></path>
+<circle cx="220" cy="220" r="96" fill="#ffffff"></circle>
+<text x="220" y="212" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-size="46" font-weight="700" fill="#111418">60</text>
+<text x="220" y="240" text-anchor="middle" font-family="Inter, sans-serif" font-size="15" fill="#4a5058">minutes a day</text>
+<text x="289" y="101" text-anchor="middle" dominant-baseline="middle" font-family="Inter, sans-serif" font-size="15" font-weight="600" fill="#ffffff">Plan</text>
+<text x="289" y="340" text-anchor="middle" dominant-baseline="middle" font-family="Inter, sans-serif" font-size="15" font-weight="600" fill="#ffffff">Trade</text>
+<text x="82" y="220" text-anchor="middle" dominant-baseline="middle" font-family="Inter, sans-serif" font-size="15" font-weight="600" fill="#111418">Journal</text>
+<text x="151" y="101" text-anchor="middle" dominant-baseline="middle" font-family="Inter, sans-serif" font-size="15" font-weight="600" fill="#111418">Review</text>
+</svg>
+</div>
+</section>
+
+<section id="tools" style="background: #111418; color: #ffffff; padding: 80px 24px">
+<div style="max-width: 1200px; margin: 0 auto">
+<h2 style="margin: 0; font: 700 clamp(30px, 4vw, 46px)/1.08 'Space Grotesk', sans-serif">Two tools that give you your time back</h2>
+<p style="margin: 14px 0 40px; color: #b9c0c8; max-width: 60ch">Free when you open your Exness account through Trade Hour.</p>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr)); gap: 24px">
+
+<div style="background: #1b2027; border-radius: 18px; padding: 28px; display: flex; flex-direction: column; gap: 18px">
+<div style="background: #ffffff; color: #111418; border-radius: 12px; padding: 16px; font-size: 14px">
+<div style="display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; font-weight: 600; padding-bottom: 8px; border-bottom: 1px solid #e6e8eb"><span>This week</span><span style="color: #1d7a55">Rules followed 9 of 10</span></div>
+<div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; padding-top: 10px; color: #5b6168; font-size: 13px"><span>Pair</span><span>Setup</span><span>Risk</span><span>Note</span></div>
+<div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; padding-top: 6px"><span>XAUUSD</span><span>Break and retest</span><span>1%</span><span>Waited for close</span></div>
+<div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; padding-top: 6px"><span>EURUSD</span><span>Range</span><span>0.5%</span><span>Skipped news</span></div>
+</div>
+<h3 style="margin: 0; font: 700 26px 'Space Grotesk', sans-serif">Trading journal</h3>
+<p style="margin: 0; color: #c9cfd6">Log a trade in under a minute. It tracks your risk per trade, whether you followed your plan, and shows the patterns behind your wins and losses, so your review takes ten minutes, not an evening.</p>
+</div>
+
+<div style="background: #1b2027; border-radius: 18px; padding: 28px; display: flex; flex-direction: column; gap: 18px">
+<svg viewBox="0 0 400 150" style="width: 100%; height: auto; background: #ffffff; border-radius: 12px" role="img" aria-label="Price chart with a highlighted zone and an alert marker">
+<rect x="210" y="34" width="190" height="26" fill="#ffd9c9"></rect>
+<polyline points="10,120 50,104 80,112 120,80 150,90 190,52 220,62 250,44 280,70 320,58 360,40 390,48" fill="none" stroke="#1b3a5c" stroke-width="3"></polyline>
+<circle cx="250" cy="44" r="7" fill="#e8501a"></circle>
+<text x="262" y="28" font-family="Inter, sans-serif" font-size="13" font-weight="600" fill="#b83d10">Zone reached: alert sent</text>
+</svg>
+<h3 style="margin: 0; font: 700 26px 'Space Grotesk', sans-serif">Indicator on the Exness terminal</h3>
+<p style="margin: 0; color: #c9cfd6">It marks the key levels and sessions on your chart and alerts you when price reaches a zone you care about. No more staring at screens waiting: open the terminal when it's time to decide.</p>
+</div>
+
+</div>
+</div>
+</section>
+
+<section id="hour" style="max-width: 1200px; margin: 0 auto; padding: 80px 24px">
+<h2 style="margin: 0 0 36px; font: 700 clamp(30px, 4vw, 46px)/1.08 'Space Grotesk', sans-serif">What your hour looks like</h2>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); gap: 20px">
+<div style="border-top: 4px solid #1b3a5c; padding-top: 16px"><p style="margin: 0; font: 700 34px 'Space Grotesk', sans-serif">10 min</p><h3 style="margin: 4px 0 6px; font-size: 19px">Plan</h3><p style="margin: 0; color: #4a5058">Check the levels the indicator marked and the news for the day.</p></div>
+<div style="border-top: 4px solid #e8501a; padding-top: 16px"><p style="margin: 0; font: 700 34px 'Space Grotesk', sans-serif">30 min</p><h3 style="margin: 4px 0 6px; font-size: 19px">Trade</h3><p style="margin: 0; color: #4a5058">Act only when an alert fires on your plan. No alert, no trade.</p></div>
+<div style="border-top: 4px solid #ffb08f; padding-top: 16px"><p style="margin: 0; font: 700 34px 'Space Grotesk', sans-serif">10 min</p><h3 style="margin: 4px 0 6px; font-size: 19px">Journal</h3><p style="margin: 0; color: #4a5058">Log each trade and whether you followed your rules.</p></div>
+<div style="border-top: 4px solid #9db7d1; padding-top: 16px"><p style="margin: 0; font: 700 34px 'Space Grotesk', sans-serif">10 min</p><h3 style="margin: 4px 0 6px; font-size: 19px">Review</h3><p style="margin: 0; color: #4a5058">See what worked this week and adjust one thing.</p></div>
+</div>
+</section>
+
+<section id="reward" style="background: #e8501a; color: #ffffff; padding: 72px 24px">
+<div style="max-width: 1200px; margin: 0 auto; display: flex; flex-wrap: wrap; gap: 32px; align-items: center; justify-content: space-between">
+<div style="flex: 1 1 520px; min-width: 0">
+<h2 style="margin: 0; font: 700 clamp(30px, 4vw, 46px)/1.08 'Space Grotesk', sans-serif">Get rewarded in EXD when you sign up</h2>
+<p style="margin: 14px 0 0; font-size: 19px; max-width: 52ch">Open your Exness account through Trade Hour and we reward you with <span id="exdAmount">[EXD AMOUNT]</span>, on top of the free journal and indicator.</p>
+<p id="exdTerms" style="margin: 10px 0 0; font-size: 14px; color: #ffe3d8">[EXD REWARD TERMS AND ELIGIBILITY]</p>
+</div>
+<a href="#join" style="background: #111418; color: #ffffff; text-decoration: none; padding: 16px 26px; border-radius: 12px; font-weight: 600">Claim my reward</a>
+</div>
+</section>
+
+<section id="join" style="max-width: 1200px; margin: 0 auto; padding: 80px 24px">
+<h2 style="margin: 0; font: 700 clamp(30px, 4vw, 46px)/1.08 'Space Grotesk', sans-serif">Get started</h2>
+<p style="margin: 12px 0 28px; color: #4a5058; max-width: 60ch">Already joined? <a href="/client/">Log in to your client dashboard</a>.</p>
+<div role="radiogroup" aria-label="Do you already trade with Exness?" class="choose">
+<button type="button" role="radio" aria-checked="true" data-path="new" class="opt on"><b>New to Exness</b><span>Open your Exness account through our partner link and claim your tools and EXD reward.</span></button>
+<button type="button" role="radio" aria-checked="false" data-path="switch" class="opt"><b>Already an Exness trader</b><span>Keep your account. We'll guide you through asking Exness to move it to Trade Hour.</span></button>
+</div>
+<div style="display: flex; flex-wrap: wrap; gap: 48px; margin-top: 36px">
+<div style="flex: 1 1 380px; min-width: 0">
+<div id="stepsNew">
+<h3 class="h3">Start in three steps</h3>
+<ol class="steps">
+<li><b>Tell us where to send your tools.</b></li>
+<li><b>Open your Exness account</b> through our partner link, using the same email.</li>
+<li><b>Get your journal, indicator and EXD reward</b> once your account is verified and funded.</li>
+</ol>
+</div>
+<div id="stepsSwitch" hidden>
+<h3 class="h3">Switch to Trade Hour in four steps</h3>
+<ol class="steps" id="switchList"></ol>
+<p style="margin: 16px 0 0; color: #4a5058; font-size: 15px">Exness decides on partner changes and may set conditions. <button type="button" class="linkbtn" data-chat="switch">Walk me through it in the chat</button></p>
+</div>
+</div>
+<div style="flex: 1 1 420px; min-width: 0; background: #f4f6f8; border-radius: 18px; padding: 28px">
+<div id="formWrap">
+<form id="joinForm" style="display: flex; flex-direction: column; gap: 14px" novalidate>
+<p id="formLead" style="margin: 0; font-weight: 600">Claim your tools and EXD reward</p>
+<label class="lbl">Your name<input name="name" required autocomplete="name" maxlength="80" class="inp" /></label>
+<label class="lbl"><span id="emailLbl">Email (use the same one for Exness)</span><input name="email" type="email" required autocomplete="email" class="inp" /></label>
+<label class="lbl">Country<select name="country" class="inp"><option>South Africa</option><option>Nigeria</option><option>Kenya</option><option>Botswana</option><option>Ghana</option><option>Malaysia</option><option>Other</option></select></label>
+<label style="display: flex; gap: 10px; align-items: flex-start; font-size: 14px; color: #4a5058"><input name="consent" type="checkbox" required style="width: 20px; height: 20px; margin-top: 2px; flex: none" />I understand trading CFDs carries a high risk of loss and Trade Hour gives education and tools, not advice.</label>
+<p class="err" id="formErr" role="alert" hidden></p>
+<button type="submit" id="joinBtn" class="cta">Continue to Exness sign-up</button>
+</form>
+</div>
+<div id="doneWrap" hidden>
+<div role="status" style="display: flex; flex-direction: column; gap: 12px">
+<h3 style="margin: 0; font: 700 26px 'Space Grotesk', sans-serif">You're in, <span id="fname">trader</span>.</h3>
+<p id="doneNew" style="margin: 0; color: #4a5058">Next, open your Exness account through our partner link with the same email. Your tools and EXD reward unlock once it's verified and funded.</p>
+<p id="doneSwitch" hidden style="margin: 0; color: #4a5058">Now ask Exness Support to move your account to Trade Hour (steps on the left). Once Exness confirms, log in to your client dashboard with the same email.</p>
+<div style="display: flex; flex-wrap: wrap; gap: 10px">
+<a id="partnerLink" href="https://one.exnessonelink.com/a/ijfv29rud7" rel="noopener" class="dark">Open my Exness account</a>
+<a href="/client/" class="ghostbtn">Client dashboard</a>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+
+<footer style="background: #111418; color: #b9c0c8; padding: 48px 24px; font-size: 13px">
+<div style="max-width: 1200px; margin: 0 auto; display: flex; flex-direction: column; gap: 12px">
+<p style="margin: 0; color: #ffffff; font: 700 18px 'Space Grotesk', sans-serif">Trade Hour</p>
+<p style="margin: 0; max-width: 90ch">Risk warning: CFDs are complex instruments and come with a high risk of losing money rapidly due to leverage. You should consider whether you understand how CFDs work and whether you can afford to take the high risk of losing your money.</p>
+<p style="margin: 0; max-width: 90ch">Trade Hour is an independent Exness partner. We provide educational content and tools only and do not give investment advice, signals or recommendations. Accounts are opened and held with Exness.</p>
+</div>
+</footer>
+
+</div>
+<button id="chatBtn" type="button" aria-controls="chat" aria-expanded="false"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H8l-4 4z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>Questions? Ask us</button>
+<section id="chat" role="dialog" aria-label="Trade Hour assistant" hidden>
+<div class="ch-head"><b>Trade Hour assistant</b><button class="ch-x" id="chatX" aria-label="Close chat">×</button></div>
+<div id="chatLog" aria-live="polite"></div>
+<form class="ch-form" id="chatForm"><input id="chatIn" autocomplete="off" maxlength="600" placeholder="Ask about the tools, EXD, switching…" aria-label="Your question"><button type="submit">Send</button></form>
+<p class="ch-foot">Education and tools only, not advice. Never share passwords or API keys here.</p>
+</section>
+<script>
+{
+const $=id=>document.getElementById(id);
+const esc=t=>String(t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const q=new URLSearchParams(location.search);
+const campaign=(q.get('campaign')||q.get('c')||'').slice(0,60);
+// Exness attributes by link code, so a campaign gets its own link (?link=<code>). ?campaign= is only recorded on the claim.
+const code=(q.get('link')||'').replace(/[^A-Za-z0-9_-]/g,'');
+let LINK=code?'https://one.exnessonelink.com/a/'+code:$('partnerLink').href, SERVER=false, PATH='new';
+
+/* Built-in answers for when no server is running. The server (engine/faq.py) is the source of truth. */
+let FAQ=[
+ ["What is Trade Hour?","what trade hour about who company","Trade Hour is an independent Exness partner. We give busy people tools to trade in under an hour a day: a trading journal and an indicator for the Exness terminal. We don't manage money, give signals or tell you what to trade."],
+ ["What tools do I get?","tools journal indicator get included features","Two tools, free when you open your Exness account through us: a trading journal (your trades come in automatically; you add your setup, risk and whether you followed your rules) and an indicator on the Exness terminal that marks key levels and sessions and alerts you when price reaches your zone."],
+ ["Does it cost anything?","cost price fee pay free charge","The tools are free for clients who open their Exness account through Trade Hour. Exness's normal trading costs still apply, as they would without us."],
+ ["What is the EXD reward?","exd reward bonus sign","When you open and verify your Exness account through Trade Hour, we send you an EXD reward. EXD is Exness's reward currency; we send it from our Exness Partner Area to your account."],
+ ["What are lot milestones?","milestone lots volume extra levels","As you trade, your lots add up. When you pass a milestone we send you EXD, and your client dashboard shows your progress. Milestones reward activity, not profits. Never trade more just to reach one."],
+ ["How do I sign up?","sign up signup register join open new start","Choose 'New to Exness' below, tell us your name and email, then open your Exness account through our partner link with the same email. Your tools and EXD reward unlock once your account is verified and funded."],
+ ["I already trade with Exness","already existing switch change partner move transfer","You can keep your account. Exness lets clients ask to change their partner. Choose 'Already an Exness trader' and I'll walk you through it."],
+ ["Do I lose my account if I change partner?","lose account trades money history balance change partner switch keep","No. Your Exness account, balance and trading history stay with Exness; a partner change only changes which partner you're linked to. Exness confirms the details when you make the request."],
+ ["Do I need to share my password or API key?","password api key share security safe credentials","No. Never share your Exness password or API keys with anyone, including us. Your trades come into the journal through our partner connection, which can't place trades or move money."],
+ ["Will you tell me what to trade?","signals advice what trade tips recommendations buy sell","No. We don't give signals, market views or advice. The tools help you follow your own plan. Trading CFDs carries a high risk of losing money."],
+ ["Can I lose money?","lose risk safe guaranteed profit returns","Yes. Trading CFDs with leverage carries a high risk of losing money quickly. Start on a demo, risk a small fixed % per trade, and only trade money you can afford to lose."],
+ ["Who holds my money?","money deposit withdraw holds funds broker","Your account and money are held by Exness. You deposit and withdraw in your Exness Personal Area. Trade Hour never handles client funds."]
+].map(([q,k,a])=>({q,k,a}));
+let STEPS=["Log in to your Exness Personal Area with the email you trade with.","Contact Exness Support (live chat in the Personal Area works best) and say you'd like to change your partner to Trade Hour. Give them our partner link: "+LINK,"Exness reviews the request and decides; they may ask you to confirm by email. While it's being processed your status shows as 'changing'.","Register your switch below so we can look out for it. Once Exness confirms, log in to your client dashboard with the same email to unlock your tools and EXD reward."];
+const renderSteps=()=>{$('switchList').innerHTML=STEPS.map(t=>`<li>${linkify(t)}</li>`).join('')};
+const linkify=t=>esc(t).replace(/(https:\/\/[^\s<]+)/g,'<a href="$1" target="_blank" rel="noopener">$1</a>');
+renderSteps();
+
+fetch('/api/public/config').then(r=>r.ok?r.json():null).then(c=>{if(!c)return;SERVER=true;
+ if(c.partner_link&&!code)LINK=c.partner_link;
+ if(c.exd_amount)$('exdAmount').textContent=c.exd_amount+' EXD';
+ if(c.exd_terms)$('exdTerms').textContent=c.exd_terms;}).catch(()=>{});
+fetch('/api/public/faq').then(r=>r.ok?r.json():null).then(d=>{if(!d)return;STEPS=d.switch_steps;renderSteps();
+ FAQ=d.faq.map(x=>({q:x.q,k:x.q,a:x.a}))}).catch(()=>{});
+
+/* ---------- New vs existing ---------- */
+function choose(path,openChat){PATH=path;document.querySelectorAll('.opt').forEach(o=>{const on=o.dataset.path===path;o.classList.toggle('on',on);o.setAttribute('aria-checked',on)});
+ $('stepsNew').hidden=path!=='new';$('stepsSwitch').hidden=path!=='switch';
+ $('formLead').textContent=path==='new'?'Claim your tools and EXD reward':"Tell us you're switching";
+ $('emailLbl').textContent=path==='new'?'Email (use the same one for Exness)':'The email on your Exness account';
+ $('joinBtn').textContent=path==='new'?'Continue to Exness sign-up':'Register my switch';
+ if(openChat)startSwitch()}
+document.querySelectorAll('.opt').forEach(o=>o.addEventListener('click',()=>choose(o.dataset.path,o.dataset.path==='switch')));
+document.querySelector('.choose').addEventListener('keydown',e=>{if(!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key))return;e.preventDefault();const n=PATH==='new'?'switch':'new';choose(n);document.querySelector(`.opt[data-path="${n}"]`).focus()});
+if(q.get('path')==='switch')choose('switch');
+
+const f=$('joinForm');
+f.addEventListener('submit',async e=>{e.preventDefault();const err=$('formErr');err.hidden=true;
+ if(!f.checkValidity()){err.textContent=!f.elements.consent.checked?'Please confirm you understand the risk.':'Please add your name and a valid email.';err.hidden=false;return}
+ const btn=$('joinBtn');btn.disabled=true;const t=btn.textContent;btn.textContent='One moment…';
+ const body={name:f.elements.name.value.trim(),email:f.elements.email.value.trim(),country:f.elements.country.value,consent:true,campaign,path:PATH};
+ try{const r=await fetch('/api/public/claim',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  if(r.ok){const j=await r.json();if(j.partner_link&&!code)LINK=j.partner_link}}catch(_){/* no server: still continue */}
+ btn.disabled=false;btn.textContent=t;
+ $('partnerLink').href=LINK;$('partnerLink').hidden=PATH!=='new';$('doneNew').hidden=PATH!=='new';$('doneSwitch').hidden=PATH!=='switch';
+ $('fname').textContent=body.name.split(' ')[0]||'trader';$('formWrap').hidden=true;$('doneWrap').hidden=false;});
+
+/* ---------- Chat ---------- */
+const log=$('chatLog'),HIST=[];let stepI=-1,greeted=false;
+function openChat(){$('chat').hidden=false;$('chatBtn').setAttribute('aria-expanded','true');if(!greeted){greeted=true;greet()}setTimeout(()=>$('chatIn').focus(),30)}
+function closeChat(){$('chat').hidden=true;$('chatBtn').setAttribute('aria-expanded','false');$('chatBtn').focus()}
+$('chatBtn').addEventListener('click',()=>$('chat').hidden?openChat():closeChat());$('chatX').addEventListener('click',closeChat);
+$('chat').addEventListener('keydown',e=>{if(e.key==='Escape')closeChat()});
+document.querySelectorAll('[data-chat="switch"]').forEach(b=>b.addEventListener('click',startSwitch));
+function add(who,html,chips){const d=document.createElement('div');d.className='msg '+who;d.innerHTML=html;log.appendChild(d);
+ if(chips&&chips.length){const c=document.createElement('div');c.className='chips';chips.forEach(([l,fn])=>{const b=document.createElement('button');b.type='button';b.className='chip';b.textContent=l;b.onclick=()=>{c.remove();fn()};c.appendChild(b)});log.appendChild(c)}
+ log.scrollTop=log.scrollHeight;return d}
+const MENU=()=>[["What tools do I get?",()=>ask("What tools do I get?")],["What is the EXD reward?",()=>ask("What is the EXD reward?")],["I already trade with Exness",startSwitch],["How do I sign up?",()=>ask("How do I sign up?")]];
+function greet(){add('bot',"Hi! I can answer questions about Trade Hour, our tools, the EXD reward and milestones, or help you move an existing Exness account to us. What would you like to know?",MENU())}
+function startSwitch(){if($('chat').hidden){$('chat').hidden=false;$('chatBtn').setAttribute('aria-expanded','true');greeted=true}
+ choose('switch');stepI=-1;add('bot',"Great, you can keep your Exness account. Exness lets clients ask to change their partner, and it takes a few minutes on your side. Ready for step 1?",[["Yes, show me",nextStep],["Will I lose my trades or money?",()=>ask("If I change partner, do I lose my account, trades or money?")]])}
+function nextStep(){stepI++;if(stepI<STEPS.length){const last=stepI===STEPS.length-1;add('bot',`<b>Step ${stepI+1} of ${STEPS.length}</b>\n${linkify(STEPS[stepI])}`,last?[["Register my switch",()=>{closeChat();$('join').scrollIntoView({behavior:'smooth'});setTimeout(()=>f.elements.name.focus(),400)}],["I have a question",()=>$('chatIn').focus()]]:[["Done, next step",nextStep],["I have a question",()=>$('chatIn').focus()]])}}
+function local(qn){const words=new Set(qn.toLowerCase().match(/[a-z]+/g)||[]);let best=null,score=0;
+ FAQ.forEach(x=>{const s=(x.k+' '+x.q).toLowerCase().match(/[a-z]+/g).filter(w=>w.length>2&&words.has(w)).length;if(s>score){best=x;score=s}});
+ return best?best.a:"I'm not sure about that one. Try asking about the tools, the EXD reward, milestones, signing up, or switching from another partner."}
+async function ask(text){add('me',esc(text));HIST.push({role:'user',content:text});const t=add('bot','<span class="typing">Typing…</span>');let reply;
+ if(SERVER){try{const r=await fetch('/api/public/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:HIST})});const j=await r.json();reply=r.ok?j.reply:(j.error||'Sorry, something went wrong.')}catch(_){reply=local(text)}}else reply=local(text);
+ t.innerHTML=linkify(reply);HIST.push({role:'assistant',content:reply});if(HIST.length>16)HIST.splice(0,2);
+ if(/switch|already|change partner|existing/i.test(text)&&stepI<0)add('bot','Want me to walk you through switching?',[["Yes, guide me",startSwitch]]);log.scrollTop=log.scrollHeight}
+$('chatForm').addEventListener('submit',e=>{e.preventDefault();const v=$('chatIn').value.trim();if(!v)return;$('chatIn').value='';ask(v)});
+}
+</script></body></html>

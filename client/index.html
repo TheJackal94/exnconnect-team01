@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Trade Hour Client</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{color-scheme:light dark;--bg:light-dark(#fff,#111418);--ink:light-dark(#111418,#eef1f4);--mut:light-dark(#5b6168,#9ea6ae);--line:light-dark(#e6e8eb,#262b31);--panel:light-dark(#f4f6f8,#181c21);--or:light-dark(#e8501a,#ff7a45);--bl:light-dark(#1b3a5c,#7fb0e0);--red:light-dark(#c8321f,#ff7a63);--ok:light-dark(#1d7a55,#5fcf9f)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 Inter,system-ui,sans-serif;overflow-x:clip}
+h1,h2,h3{font-family:Archivo,Inter,sans-serif;line-height:1.1;margin:0;text-wrap:balance}
+h1{font-size:clamp(26px,3.6vw,38px);font-weight:800}h2{font-size:21px;font-weight:700;margin:28px 0 10px}
+a{color:var(--or)}
+header{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:14px clamp(16px,4vw,40px);border-bottom:1px solid var(--line)}
+.brand{display:flex;gap:10px;align-items:center;font:800 19px Archivo;color:var(--ink);text-decoration:none}
+.logo{width:32px;height:32px}
+main{max-width:1100px;margin:0 auto;padding:clamp(18px,3vw,36px) clamp(16px,4vw,40px) 60px}
+.lede{color:var(--mut);margin:8px 0 0;max-width:70ch}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px}
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:12px;overflow:hidden;margin:20px 0}
+.kpi{background:var(--bg);padding:14px 16px}.kpi b{display:block;font:700 clamp(20px,2.6vw,28px)/1.15 Archivo;white-space:nowrap}.kpi span{font-size:13px;color:var(--mut)}
+.tabs{display:flex;gap:6px;border-bottom:1px solid var(--line);margin-top:8px;overflow-x:auto}
+.tabs a{padding:12px 14px;color:var(--mut);text-decoration:none;font-weight:600;border-bottom:3px solid transparent;white-space:nowrap}.tabs a.on{color:var(--ink);border-color:var(--or)}
+table{width:100%;border-collapse:collapse;font-size:14px}th,td{padding:10px 8px;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle}th{font-size:13px;color:var(--mut);font-weight:600}
+td.n,th.n{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+.tag{font-size:12px;padding:2px 8px;border-radius:10px;border:1px solid var(--line);white-space:nowrap;background:var(--bg)}
+.ok{color:var(--ok)}.bad{color:var(--red)}.due,.in_partner_area{color:var(--or)}.paid{color:var(--ok)}.locked{color:var(--mut)}
+button,.btn{font:600 15px Inter,sans-serif;min-height:44px;padding:0 16px;border-radius:10px;border:1px solid var(--ink);background:var(--ink);color:var(--bg);cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;justify-content:center;text-decoration:none}
+button.ghost,.btn.ghost{background:transparent;color:var(--ink)}button.sm{min-height:36px;font-size:13px;padding:0 10px}button.or{background:var(--or);border-color:var(--or);color:#fff}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,a:focus-visible{outline:3px solid var(--or);outline-offset:2px}
+button[disabled]{opacity:.5;cursor:default}
+input,select,textarea{font:16px Inter,sans-serif;min-height:44px;padding:0 12px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink);width:100%}
+textarea{padding:10px 12px;min-height:90px;resize:vertical}
+label{display:grid;gap:5px;font-size:13px;color:var(--mut);font-weight:600}
+.row{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,160px),1fr));gap:12px}
+.seg{display:flex;gap:6px;flex-wrap:wrap}.seg button{flex:1}.seg button[aria-pressed=true]{background:var(--or);border-color:var(--or);color:#fff}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:14px 0}
+.note{font-size:13px;color:var(--mut)}
+.info{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);background:var(--panel);border-radius:12px;padding:12px 14px;font-size:14px;margin-top:16px}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--ok);flex:none;margin-top:6px}
+.meter{height:10px;background:var(--line);border-radius:5px;overflow:hidden}.meter i{display:block;height:100%;background:var(--or)}
+.ladder{display:grid;gap:10px}.rung{display:grid;grid-template-columns:110px minmax(0,1fr) auto;gap:14px;align-items:center;padding:14px;border:1px solid var(--line);border-radius:12px;background:var(--bg)}
+.rung b{font:700 18px Archivo}.rung.done{border-color:var(--ok)}
+.login{max-width:440px;margin:6vh auto 0}.login form{display:grid;gap:14px;margin-top:20px}
+.err{color:var(--red);font-size:14px;margin:0}
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:12px 18px;border-radius:12px;font-weight:600;opacity:0;pointer-events:none;transition:opacity .3s;z-index:9;max-width:90vw}.toast.on{opacity:1}
+dialog{border:1px solid var(--line);border-radius:16px;padding:0;width:min(520px,calc(100vw - 32px));background:var(--bg);color:var(--ink)}
+dialog::backdrop{background:rgba(0,0,0,.45)}
+dialog form{display:grid;gap:14px;padding:20px}
+.scroll{overflow-x:auto}
+.g2{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:24px}
+@media(max-width:820px){.g2{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:560px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.rung{grid-template-columns:minmax(0,1fr) auto}.rung .meter{grid-column:1/-1;grid-row:2}}
+@media(max-width:600px){.stack thead{display:none}.stack tr{display:grid;padding-block:10px;border-bottom:1px solid var(--line)}.stack td{display:flow-root;border:0;padding:3px 0;padding-inline-start:7em;text-align:start!important;white-space:normal}.stack td::before{content:attr(data-l);float:inline-start;width:6.5em;margin-inline-start:-7em;color:var(--mut)}.stack td:empty{display:none}}
+</style>
+<script>new MutationObserver(()=>{for(const c of document.querySelectorAll('.stack td:not([data-l])')){let i=0,p=c;while(p=p.previousElementSibling)i++;c.dataset.l=c.closest('table').rows[0].cells[i]?.textContent||''}}).observe(document,{childList:true,subtree:true})</script>
+</head><body>
+<header><a class="brand" href="/landing/"><svg class="logo" viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="18" fill="none" stroke="currentColor" stroke-width="3"/><path d="M20 20 L20 2 A18 18 0 0 1 38 20 Z" fill="var(--or)"/><path d="M20 9v11l7 5" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round"/></svg>Trade Hour</a><div id="who" class="note"></div></header>
+<main id="app"></main>
+<dialog id="dlg" aria-labelledby="dlgT"></dialog>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script>
+{
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmt=(n,d=0)=>Number(n||0).toLocaleString('en-US',{maximumFractionDigits:d});
+const toast=m=>{const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('on'),2800)};
+let TOKEN='';try{TOKEN=sessionStorage.getItem('th_client')||''}catch(e){}
+let ME=null,CFG={},FILTER='all';
+async function api(path,body){const o={headers:{'Content-Type':'application/json'}};if(TOKEN)o.headers.Authorization='Bearer '+TOKEN;if(body!==undefined){o.method='POST';o.body=JSON.stringify(body)}
+ const r=await fetch(path,o);let j={};try{j=await r.json()}catch(e){}if(!r.ok){const e=new Error(j.error||'HTTP '+r.status);e.reason=j.reason;e.status=r.status;throw e}return j}
+
+/* ---------- Login ---------- */
+function login(err){$('#who').innerHTML='';
+ $('#app').innerHTML=`<div class="login"><h1>Your Trade Hour dashboard</h1><p class="lede">Your trading journal and EXD milestones. It unlocks once your Exness account is signed up through Trade Hour and funded.</p>
+ <form id="lf" novalidate><label>Email on your Exness account<input name="email" type="email" autocomplete="email" required></label>
+ <label>One of your Exness account numbers<input name="account" inputmode="numeric" autocomplete="off" required placeholder="e.g. 16000537909"></label>
+ ${err||''}<button class="or" type="submit">Open my dashboard</button></form>
+ ${CFG.mode&&CFG.mode!=='live'&&CFG.demo_account?`<p class="note" style="margin-top:14px">Demo: use account <b>${esc(CFG.demo_account)}</b> with any email. In live mode Exness confirms the email and account belong to you.</p>`:''}
+ <p class="note" style="margin-top:14px">We'll never ask for your Exness password or API keys.</p>
+ <p class="note">Not with us yet? <a href="/landing/#join">Sign up</a> · Already trade with Exness? <a href="/landing/?path=switch#join">Switch to Trade Hour</a></p></div>`;
+ $('#lf').addEventListener('submit',async e=>{e.preventDefault();const f=e.target,b=f.querySelector('button');if(!f.checkValidity()){return login('<p class="err" role="alert">Enter your email and an account number.</p>')}
+  b.disabled=true;b.textContent='Checking with Exness…';
+  try{const r=await api('/api/client/login',{email:f.email.value.trim(),account:f.account.value.trim()});TOKEN=r.token;try{sessionStorage.setItem('th_client',TOKEN)}catch(_){}await boot()}
+  catch(x){const m={not_affiliated:`<div class="err" role="alert"><b>We can't find this account under Trade Hour.</b> New to Exness? <a href="/landing/#join">Sign up through our link</a>. Already with Exness under another partner? <a href="/landing/?path=switch#join">See how to switch</a>.</div>`,
+   not_funded:`<div class="err" role="alert"><b>You're signed up with us. Fund your account to unlock.</b> Make your first deposit in your Exness Personal Area; your dashboard opens once Exness shows the deposit (usually within a day).</div>`,
+   account_mismatch:`<p class="err" role="alert">That account number isn't linked to this email under Trade Hour. Check both and try again.</p>`}[x.reason]||`<p class="err" role="alert">${esc(x.status===0||!x.status?'Can\'t reach the server. Try again shortly.':x.message)}</p>`;
+   login(m)}})}
+
+/* ---------- Dashboard ---------- */
+const dur=(a,b)=>{const m=Math.round((new Date(b)-new Date(a))/60000);return isNaN(m)?'':m<60?m+'m':Math.floor(m/60)+'h '+(m%60)+'m'};
+const when=t=>t?new Date(t).toLocaleString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}):'';
+const lotsTxt=n=>fmt(n)+(n===1?' lot':' lots');
+const statusTxt={locked:'Locked',due:'Earned, on its way',in_partner_area:'Earned, being sent',paid:'Sent ✓'};
+function next(){return ME.milestones.find(m=>m.status==='locked')}
+function render(){const tab=['journal','milestones','account'].includes(location.hash.slice(1))?location.hash.slice(1):'journal',nx=next(),st=ME.stats;
+ $('#who').innerHTML=`${esc(ME.email)} · <button class="sm ghost" id="out">Log out</button>`;
+ $('#app').innerHTML=`<h1>${fmt(ME.lots,1)} lots traded${nx?` · ${fmt(nx.lots-ME.lots,1)} to your next ${fmt(nx.exd)} EXD`:' · every milestone reached'}</h1>
+ <p class="lede">Plan, trade on alerts only, journal, review. Your hour, recorded.${ME.demo?' <span class="tag">demo login</span>':''}</p>
+ <div class="kpis"><div class="kpi"><b>${fmt(ME.lots,1)}</b><span>Lots traded</span></div><div class="kpi"><b>${fmt(ME.exd_earned)} EXD</b><span>Earned · ${fmt(ME.exd_paid)} sent</span></div><div class="kpi"><b>${fmt(st.week_trades)}</b><span>Trades this week</span></div><div class="kpi"><b>${st.rules_pct==null?'—':st.rules_pct+'%'}</b><span>Rules followed</span></div></div>
+ <nav class="tabs" aria-label="Sections">${[['journal','Journal'],['milestones','Milestones'],['account','Account']].map(([k,l])=>`<a href="#${k}" class="${k===tab?'on':''}" ${k===tab?'aria-current="page"':''}>${l}</a>`).join('')}</nav>
+ <div id="tab">${T[tab]()}</div>`;
+ $('#out').onclick=()=>{TOKEN='';try{sessionStorage.removeItem('th_client')}catch(_){}ME=null;login()}}
+const T={
+journal:()=>{const st=ME.stats,list=ME.trades.filter(t=>FILTER==='all'||!('followed' in t)),logged=ME.trades.filter(t=>'followed' in t),syms={};ME.trades.slice(0,50).forEach(t=>syms[t.symbol]=(syms[t.symbol]||0)+1);const top=Object.entries(syms).sort((a,b)=>b[1]-a[1])[0];
+ return `<div class="info"><span class="dot"></span><div><b>Auto-sync is on.</b> ${esc(ME.sync_note)}</div></div>
+ <div class="g2"><div><div class="toolbar"><button class="sm ${FILTER==='all'?'':'ghost'}" data-f="all">All (${ME.trades.length})</button><button class="sm ${FILTER==='todo'?'':'ghost'}" data-f="todo">Needs notes (${ME.trades.length-logged.length})</button><span style="flex:1"></span><button class="sm" id="add">Add a trade</button></div>
+ <div class="scroll"><table class="stack"><thead><tr><th>Closed</th><th>Symbol</th><th class="n">Lots</th><th>Held</th><th>Setup</th><th>Rules</th><th>Result</th><th></th></tr></thead><tbody>
+ ${list.slice(0,80).map(t=>`<tr><td>${esc(when(t.close))}${t.auto?'':' <span class="tag">manual</span>'}</td><td><b>${esc(t.symbol)}</b></td><td class="n">${fmt(t.lots,2)}</td><td>${esc(dur(t.open,t.close))}</td><td>${esc(t.setup||'')}${t.risk!=null?` <span class="note">${esc(t.risk)}%</span>`:''}</td><td>${'followed' in t?(t.followed?'<span class="ok">✓ followed</span>':'<span class="bad">✗ broke</span>'):''}</td><td>${t.result?esc({win:'Win',loss:'Loss',be:'Break-even'}[t.result]):''}</td><td><button class="sm ghost" data-edit="${esc(t.id)}">${'followed' in t?'Edit':'Add notes'}</button></td></tr>`).join('')||'<tr><td colspan="8" class="note">No trades yet. Closed trades appear here the day after.</td></tr>'}
+ </tbody></table></div></div>
+ <div><h2 style="margin-top:14px">This week's review</h2><div class="card"><p style="margin:0 0 6px"><b>${fmt(st.week_trades)}</b> trades · <b>${fmt(st.week_lots,2)}</b> lots</p><p style="margin:0 0 6px">Rules followed: <b>${st.rules_pct==null?'log a trade to see':st.rules_pct+'%'}</b></p><p style="margin:0 0 6px">Logged results: <b>${st.wins}</b> wins · <b>${st.losses}</b> losses</p>${top?`<p style="margin:0">Most traded: <b>${esc(top[0])}</b></p>`:''}
+ <p class="note" style="margin:12px 0 0">Ten minutes a week: pick one rule you broke and one thing that worked. Change one thing only.</p></div>
+ <p class="note">The journal is for your own review. Trade Hour gives education and tools only, not advice. Trading CFDs carries a high risk of losing money.</p></div></div>`},
+milestones:()=>{const nx=next(),prevLots=nx?(ME.milestones[ME.milestones.indexOf(nx)-1]||{lots:0}).lots:0;
+ return `<div class="g2"><div><h2>Your milestones</h2><div class="ladder">${ME.milestones.map(m=>`<div class="rung ${m.status!=='locked'?'done':''}"><div><b>${lotsTxt(m.lots)}</b><div class="note">${fmt(m.exd)} EXD</div></div><div class="meter" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(m.progress*100)}" aria-label="${fmt(m.lots)} lot milestone"><i style="width:${Math.round(m.progress*100)}%;${m.status==='paid'?'background:var(--ok)':''}"></i></div><span class="tag ${m.status}">${statusTxt[m.status]||m.status}</span></div>`).join('')}</div>
+ <p class="note">Milestones count the lots on your Exness accounts with Trade Hour. When you pass one, we send the EXD from our Exness Partner Area; it shows as sent here once it's done. Milestones reward activity, not profit. Never trade more just to reach one.</p></div>
+ <div><h2>Next up</h2><div class="card">${nx?`<p style="margin:0 0 8px"><b>${fmt(nx.lots-ME.lots,1)} lots</b> to go for <b>${fmt(nx.exd)} EXD</b></p><div class="meter"><i style="width:${Math.round(nx.progress*100)}%"></i></div><p class="note" style="margin:8px 0 0">${fmt(ME.lots-prevLots,1)} of ${fmt(nx.lots-prevLots,1)} lots since your last milestone.</p>`:'<p style="margin:0">You\'ve reached every milestone. Nice work.</p>'}</div>
+ <h2>Rewards</h2>${ME.rewards.length?`<div class="scroll"><table><thead><tr><th>Reward</th><th class="n">EXD</th><th>Status</th></tr></thead><tbody>${ME.rewards.map(r=>`<tr><td>${r.type==='signup'?'Sign-up reward':lotsTxt(r.milestone)}</td><td class="n">${fmt(r.amount)}</td><td><span class="tag ${r.status}">${statusTxt[r.status]||r.status}</span></td></tr>`).join('')}</tbody></table></div>`:'<p class="note">No rewards yet.</p>'}</div></div>`},
+account:()=>`<h2>Your accounts with Trade Hour</h2><div class="scroll"><table><thead><tr><th>Exness account</th></tr></thead><tbody>${ME.accounts.map(a=>`<tr><td>${esc(a)}</td></tr>`).join('')}</tbody></table></div>
+ <h2>Connecting your trades</h2><div class="card"><p style="margin:0 0 8px"><b>No API key needed.</b> Because your account is with Trade Hour, Exness shares your closed trades and lots with us through our partner connection. That's how your journal and milestones fill in automatically.</p>
+ <p style="margin:0 0 8px">That connection can't see your password, place trades, or move money. Exness doesn't include profit and loss, so you log the result yourself in the journal.</p>
+ <p class="note" style="margin:0">Never share your Exness password or API keys with anyone, including us.</p></div>
+ <p class="note" style="margin-top:16px">Questions? <a href="/landing/">Ask the Trade Hour assistant</a>.</p>`
+};
+function editDialog(t){const d=$('#dlg'),isNew=!t;t=t||{};
+ d.innerHTML=`<form method="dialog" id="ef"><h3 id="dlgT" style="font-size:20px">${isNew?'Add a trade':esc(t.symbol)+' · '+esc(when(t.close))}</h3>
+ ${isNew?`<div class="row"><label>Symbol<input name="symbol" required maxlength="12" placeholder="XAUUSD"></label><label>Lots<input name="lots" type="number" step="0.01" min="0" placeholder="0.10"></label></div>`:''}
+ <div class="row"><label>Setup<input name="setup" list="setups" maxlength="80" value="${esc(t.setup||'')}" placeholder="e.g. Break and retest"></label><label>Risk (% of account)<input name="risk" type="number" step="0.1" min="0" max="100" value="${t.risk??''}" placeholder="1"></label></div>
+ <datalist id="setups"><option>Break and retest</option><option>Range</option><option>Trend pullback</option><option>Session open</option><option>Zone alert</option></datalist>
+ <div><span class="note" style="font-weight:600">Did you follow your rules?</span><div class="seg" data-k="followed"><button type="button" aria-pressed="${t.followed===true}" data-v="true">Yes</button><button type="button" aria-pressed="${t.followed===false}" data-v="false">No</button></div></div>
+ <div><span class="note" style="font-weight:600">Result</span><div class="seg" data-k="result">${[['win','Win'],['loss','Loss'],['be','Break-even']].map(([v,l])=>`<button type="button" aria-pressed="${t.result===v}" data-v="${v}">${l}</button>`).join('')}</div></div>
+ <label>Note<textarea name="note" maxlength="500" placeholder="What did you see? What would you do differently?">${esc(t.note||'')}</textarea></label>
+ <div style="display:flex;gap:10px;justify-content:flex-end"><button type="button" class="ghost" id="cx">Cancel</button><button type="submit" class="or">Save</button></div></form>`;
+ d.querySelectorAll('.seg button').forEach(b=>b.onclick=()=>{b.parentElement.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x===b))});
+ $('#cx').onclick=()=>d.close();
+ $('#ef').onsubmit=async e=>{e.preventDefault();const f=e.target,v=k=>d.querySelector(`.seg[data-k="${k}"] [aria-pressed="true"]`)?.dataset.v;
+  const body={id:t.id||'',setup:f.setup.value.trim(),note:f.note.value.trim()};const r=parseFloat(f.risk.value);if(!isNaN(r))body.risk=r;
+  const fo=v('followed');if(fo)body.followed=fo==='true';const res=v('result');if(res)body.result=res;
+  if(isNew){body.symbol=f.symbol.value.trim();if(!body.symbol){f.symbol.focus();return}const l=parseFloat(f.lots.value);if(!isNaN(l))body.lots=l}
+  try{await api('/api/client/journal',body);d.close();ME=await api('/api/client/me');render();toast('Saved to your journal')}catch(x){toast(x.message)}};
+ d.showModal()}
+document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b||!ME)return;
+ if(b.dataset.f){FILTER=b.dataset.f;render()}else if(b.dataset.edit){editDialog(ME.trades.find(t=>t.id===b.dataset.edit))}else if(b.id==='add')editDialog(null)});
+window.addEventListener('hashchange',()=>ME&&render());
+async function boot(){if(!TOKEN)return login();try{ME=await api('/api/client/me');render()}catch(x){TOKEN='';login(x.status===401?'':`<p class="err">${esc(x.message)}</p>`)}}
+fetch('/api/public/config').then(r=>r.ok?r.json():{}).then(c=>{CFG=c||{};boot()}).catch(()=>{CFG={};$('#app').innerHTML='<div class="login"><h1>Your Trade Hour dashboard</h1><p class="lede">The dashboard needs the Trade Hour server. Start it with <code>python api/server.py</code> and open <code>/client/</code>.</p></div>'});
+}
+</script>
+</body></html>
