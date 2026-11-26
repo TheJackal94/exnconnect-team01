@@ -93,11 +93,13 @@ const when=t=>t?new Date(t).toLocaleString('en-GB',{day:'2-digit',month:'short',
 const lotsTxt=n=>fmt(n)+(n===1?' lot':' lots');
 const statusTxt={locked:'Locked',due:'Earned, on its way',in_partner_area:'Earned, being sent',paid:'Sent ✓'};
 function next(){return ME.milestones.find(m=>m.status==='locked')}
+function indHidden(){try{return localStorage.getItem('th_ind_seen')==='1'}catch(e){return false}}
 function render(){const tab=['journal','milestones','account'].includes(location.hash.slice(1))?location.hash.slice(1):'journal',nx=next(),st=ME.stats;
  $('#who').innerHTML=`${esc(ME.email)} · <button class="sm ghost" id="out">Log out</button>`;
  $('#app').innerHTML=`<h1>${fmt(ME.lots,1)} lots traded${nx?` · ${fmt(nx.lots-ME.lots,1)} to your next ${fmt(nx.exd)} EXD`:' · every milestone reached'}</h1>
  <p class="lede">Plan, trade on alerts only, journal, review. Your hour, recorded.${ME.demo?' <span class="tag">demo login</span>':''}</p>
  <div class="kpis"><div class="kpi"><b>${fmt(ME.lots,1)}</b><span>Lots traded</span></div><div class="kpi"><b>${fmt(ME.exd_earned)} EXD</b><span>Earned · ${fmt(ME.exd_paid)} sent</span></div><div class="kpi"><b>${fmt(st.week_trades)}</b><span>Trades this week</span></div><div class="kpi"><b>${st.rules_pct==null?'—':st.rules_pct+'%'}</b><span>Rules followed</span></div></div>
+ ${indHidden()?'':`<div class="info" style="margin:0 0 16px;align-items:center;border-color:var(--or)"><span class="dot" style="background:var(--or);margin-top:0"></span><div style="flex:1"><b>Your Trade Hour Compass indicator is ready.</b> It's already shared to your Exness terminal: open <b>Indicators → Shared by partner</b> and add <b>Trade Hour Compass</b> to your chart.</div><button class="sm ghost" id="indX" aria-label="Dismiss indicator message">Got it</button></div>`}
  <nav class="tabs" aria-label="Sections">${[['journal','Journal'],['milestones','Milestones'],['account','Account']].map(([k,l])=>`<a href="#${k}" class="${k===tab?'on':''}" ${k===tab?'aria-current="page"':''}>${l}</a>`).join('')}</nav>
  <div id="tab">${T[tab]()}</div>`;
  $('#out').onclick=()=>{TOKEN='';try{sessionStorage.removeItem('th_client')}catch(_){}ME=null;login()}}
@@ -146,6 +148,7 @@ milestones:()=>{const nx=next(),prevLots=nx?(ME.milestones[ME.milestones.indexOf
  <div><h2>Next up</h2><div class="card">${nx?`<p style="margin:0 0 8px"><b>${fmt(nx.lots-ME.lots,1)} lots</b> to go for <b>${fmt(nx.exd)} EXD</b></p><div class="meter"><i style="width:${Math.round(nx.progress*100)}%"></i></div><p class="note" style="margin:8px 0 0">${fmt(ME.lots-prevLots,1)} of ${fmt(nx.lots-prevLots,1)} lots since your last milestone.</p>`:'<p style="margin:0">You\'ve reached every milestone. Nice work.</p>'}</div>
  <h2>Rewards</h2>${ME.rewards.length?`<div class="scroll"><table><thead><tr><th>Reward</th><th class="n">EXD</th><th>Status</th></tr></thead><tbody>${ME.rewards.map(r=>`<tr><td>${r.type==='signup'?'Sign-up reward':lotsTxt(r.milestone)}</td><td class="n">${fmt(r.amount)}</td><td><span class="tag ${r.status}">${statusTxt[r.status]||r.status}</span></td></tr>`).join('')}</tbody></table></div>`:'<p class="note">No rewards yet.</p>'}</div></div>`},
 account:()=>`<h2>Your accounts with Trade Hour</h2><div class="scroll"><table><thead><tr><th>Exness account</th></tr></thead><tbody>${ME.accounts.map(a=>`<tr><td>${esc(a)}</td></tr>`).join('')}</tbody></table></div>
+ <h2>Your indicator</h2><div class="card"><p style="margin:0"><b>Trade Hour Compass</b> is shared to your Exness terminal. Open <b>Indicators → Shared by partner</b> and add it to your chart.</p></div>
  <h2>Account safety</h2><div class="card"><p class="note" style="margin:0">Never share your Exness password or API keys with anyone, including us.</p></div>
  <p class="note" style="margin-top:16px">Questions? <a href="/landing/">Ask the Trade Hour assistant</a>.</p>`
 };
@@ -167,7 +170,7 @@ function editDialog(t){const d=$('#dlg'),isNew=!t;t=t||{};
   try{await api('/api/client/journal',body);d.close();ME=await api('/api/client/me');render();toast('Saved to your journal')}catch(x){toast(x.message)}};
  d.showModal()}
 document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b||!ME)return;
- if(b.id==='demofill'){demoFill(b)}else if(b.dataset.f){FILTER=b.dataset.f;render()}else if(b.dataset.edit){editDialog(ME.trades.find(t=>t.id===b.dataset.edit))}else if(b.id==='add')editDialog(null)});
+ if(b.id==='indX'){try{localStorage.setItem('th_ind_seen','1')}catch(e){}b.closest('.info').remove()}else if(b.id==='demofill'){demoFill(b)}else if(b.dataset.f){FILTER=b.dataset.f;render()}else if(b.dataset.edit){editDialog(ME.trades.find(t=>t.id===b.dataset.edit))}else if(b.id==='add')editDialog(null)});
 window.addEventListener('hashchange',()=>ME&&render());
 async function boot(){if(!TOKEN)return login();try{ME=await api('/api/client/me');render()}catch(x){TOKEN='';login(x.status===401?'':`<p class="err">${esc(x.message)}</p>`)}}
 fetch('/api/public/config').then(r=>r.ok?r.json():{}).then(c=>{CFG=c||{};boot()}).catch(()=>{CFG={};$('#app').innerHTML='<div class="login"><h1>Your Trade Hour dashboard</h1><p class="lede">The dashboard needs the Trade Hour server. Start it with <code>python api/server.py</code> and open <code>/client/</code>.</p></div>'});
