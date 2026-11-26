@@ -23,7 +23,7 @@ def kb() -> list[dict]:
         {"q": f"What is {BRAND}?", "k": "what is trade hour about who are you company",
          "a": f"{BRAND} is an independent Exness partner. We give busy people tools to trade in under an hour a day: a trading journal and an indicator for the Exness terminal. We don't manage money, give signals or tell you what to trade."},
         {"q": "What tools do I get?", "k": "tools journal indicator what do i get included features",
-         "a": "Two tools, free when you open your Exness account through us: 1) a trading journal: your trades come in automatically and you add your setup, risk and whether you followed your rules; 2) an indicator on the Exness terminal that marks key levels and sessions and alerts you when price reaches your zone."},
+         "a": "Two tools, free when you open your Exness account through us: 1) a trading journal: your closed trades are loaded from Exness and you add your setup, risk, P/L and whether you followed your rules; 2) an indicator on the Exness terminal that marks key levels and sessions and alerts you when price reaches your zone."},
         {"q": "Does it cost anything?", "k": "cost price fee pay free charge subscription",
          "a": f"The tools are free for clients who open their Exness account through {BRAND}. Exness's normal trading costs (spreads, commissions, swaps) still apply, as they would without us."},
         {"q": "What does 'under an hour a day' mean?", "k": "hour day time how long routine schedule",

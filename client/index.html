@@ -146,9 +146,7 @@ milestones:()=>{const nx=next(),prevLots=nx?(ME.milestones[ME.milestones.indexOf
  <div><h2>Next up</h2><div class="card">${nx?`<p style="margin:0 0 8px"><b>${fmt(nx.lots-ME.lots,1)} lots</b> to go for <b>${fmt(nx.exd)} EXD</b></p><div class="meter"><i style="width:${Math.round(nx.progress*100)}%"></i></div><p class="note" style="margin:8px 0 0">${fmt(ME.lots-prevLots,1)} of ${fmt(nx.lots-prevLots,1)} lots since your last milestone.</p>`:'<p style="margin:0">You\'ve reached every milestone. Nice work.</p>'}</div>
  <h2>Rewards</h2>${ME.rewards.length?`<div class="scroll"><table><thead><tr><th>Reward</th><th class="n">EXD</th><th>Status</th></tr></thead><tbody>${ME.rewards.map(r=>`<tr><td>${r.type==='signup'?'Sign-up reward':lotsTxt(r.milestone)}</td><td class="n">${fmt(r.amount)}</td><td><span class="tag ${r.status}">${statusTxt[r.status]||r.status}</span></td></tr>`).join('')}</tbody></table></div>`:'<p class="note">No rewards yet.</p>'}</div></div>`},
 account:()=>`<h2>Your accounts with Trade Hour</h2><div class="scroll"><table><thead><tr><th>Exness account</th></tr></thead><tbody>${ME.accounts.map(a=>`<tr><td>${esc(a)}</td></tr>`).join('')}</tbody></table></div>
- <h2>Connecting your trades</h2><div class="card"><p style="margin:0 0 8px"><b>No API key needed.</b> Because your account is with Trade Hour, Exness shares your closed trades and lots with us through our partner reports. That's how your journal and milestones are filled in.</p>
- <p style="margin:0 0 8px">That connection can't see your password, place trades, or move money. Exness doesn't include profit and loss, so you log the result yourself in the journal.</p>
- <p class="note" style="margin:0">Never share your Exness password or API keys with anyone, including us.</p></div>
+ <h2>Account safety</h2><div class="card"><p class="note" style="margin:0">Never share your Exness password or API keys with anyone, including us.</p></div>
  <p class="note" style="margin-top:16px">Questions? <a href="/landing/">Ask the Trade Hour assistant</a>.</p>`
 };
 function editDialog(t){const d=$('#dlg'),isNew=!t;t=t||{};
