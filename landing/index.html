@@ -111,6 +111,21 @@ section{scroll-margin-top:70px}
 .coin{width:120px;height:120px;border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle at 35% 30%,#fff3ea,#ffc9a8 45%,#f08a52);color:#a8320a;font:700 26px 'Space Grotesk',sans-serif;box-shadow:inset 0 -6px 0 rgba(0,0,0,.12),0 18px 40px rgba(0,0,0,.25);animation:coin 4s ease-in-out infinite;flex:none}
 .btn.dark{background:#0a0c10;color:#fff}.btn.dark:hover{color:#fff;box-shadow:0 12px 30px rgba(0,0,0,.35)}
 
+/* milestones */
+.ms{list-style:none;margin:44px 0 20px;padding:0;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:14px;position:relative}
+.ms::before{content:"";position:absolute;left:4%;right:4%;top:50%;height:2px;background:linear-gradient(90deg,var(--or),var(--or2),#ffd0b8);opacity:.35;z-index:0}
+.ms li{position:relative;z-index:1;display:grid;gap:6px;padding:20px 18px;border-radius:16px;background:var(--card);border:1px solid var(--line);transition:transform .3s,border-color .3s;animation:msglow 5s ease-in-out infinite;animation-delay:calc(var(--i)*1s)}
+.ms li:hover{transform:translateY(-4px);border-color:rgba(255,138,76,.6)}
+.ms li .mono{color:var(--mut);font-size:11px}
+.ms li b{font:700 clamp(24px,2.6vw,32px)/1.1 'Space Grotesk',sans-serif}
+.ms li em{font-style:normal;font-weight:700;color:var(--or2);font-size:18px}
+.js .ms:not(.in) li{opacity:0;transform:translateY(20px)}
+.ms li{transition:opacity .6s ease calc(var(--i)*.12s),transform .6s cubic-bezier(.2,.8,.2,1) calc(var(--i)*.12s),border-color .3s}
+@keyframes msglow{0%,70%,100%{box-shadow:0 0 0 rgba(255,90,31,0)}80%{box-shadow:0 0 0 1px rgba(255,138,76,.7),0 10px 40px rgba(255,90,31,.25)}}
+@media(max-width:900px){.ms{grid-template-columns:repeat(3,minmax(0,1fr))}.ms::before{display:none}}
+@media(max-width:520px){.ms{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (prefers-reduced-motion: reduce){.js .ms:not(.in) li{opacity:1;transform:none}}
+
 /* join */
 .choose{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:16px}
 .opt{all:unset;box-sizing:border-box;cursor:pointer;display:grid;gap:6px;padding:22px;border:2px solid #e2e5e9;border-radius:16px;background:#fff;font:16px/1.5 Inter,sans-serif;color:#4a5058;transition:border-color .2s,transform .2s,box-shadow .2s}
@@ -292,13 +307,29 @@ Trade Hour</a>
 
 <section id="reward" class="reward">
 <div class="wrap">
-<div class="coin rv" aria-hidden="true">EXD</div>
+<div class="coin rv" aria-hidden="true"><span style="display:grid;text-align:center;line-height:1"><span data-exd style="font-size:38px">10</span><span style="font-size:15px;letter-spacing:.08em">EXD</span></span></div>
 <div style="flex:1 1 min(100%,460px)" class="rv d1">
-<h2 style="font-size:clamp(30px,4vw,46px);line-height:1.08">Get rewarded in EXD when you sign up</h2>
-<p style="margin:14px 0 0;font-size:19px;max-width:52ch">Open your Exness account through Trade Hour and we reward you with <span id="exdAmount">[EXD AMOUNT]</span>, on top of the free journal and indicator.</p>
-<p id="exdTerms" style="margin:10px 0 0;font-size:14px;color:#ffe3d8">[EXD REWARD TERMS AND ELIGIBILITY]</p>
+<h2 style="font-size:clamp(30px,4vw,46px);line-height:1.08">Get <span data-exd>10</span> EXD when you sign up</h2>
+<p style="margin:14px 0 0;font-size:19px;max-width:52ch">Open your Exness account through Trade Hour and we reward you with <span id="exdAmount">10 EXD</span>, on top of the free journal and indicator.</p>
+<p id="exdTerms" style="margin:10px 0 0;font-size:14px;color:#ffe3d8">Sent in EXD once your Exness account is opened through Trade Hour, verified and funded. One sign-up reward per person.</p>
 </div>
 <a href="#join" class="btn dark rv d2">Claim my reward <span class="arrow">→</span></a>
+</div>
+</section>
+
+<section id="milestones" class="block">
+<div class="wrap">
+<p class="mono kicker rv">// Lot milestones</p>
+<h2 class="h2 rv d1">Keep earning as you trade</h2>
+<p class="sub rv d2">After your sign-up reward, every milestone you pass on your Exness accounts with Trade Hour sends more EXD your way, up to <b id="msTotal" style="color:var(--ink)">77 EXD</b> in total. Track your progress in your client dashboard.</p>
+<ol class="ms rv" id="msList">
+<li style="--i:0"><span class="mono">Milestone 1</span><b>1 lot</b><em>+2 EXD</em></li>
+<li style="--i:1"><span class="mono">Milestone 2</span><b>10 lots</b><em>+5 EXD</em></li>
+<li style="--i:2"><span class="mono">Milestone 3</span><b>50 lots</b><em>+10 EXD</em></li>
+<li style="--i:3"><span class="mono">Milestone 4</span><b>100 lots</b><em>+20 EXD</em></li>
+<li style="--i:4"><span class="mono">Milestone 5</span><b>250 lots</b><em>+40 EXD</em></li>
+</ol>
+<p class="risk rv" style="max-width:70ch">Milestones reward activity, not profit. Never trade more just to reach one. Lots are counted on your Exness accounts opened through Trade Hour, and EXD is sent from our Exness Partner Area.</p>
 </div>
 </section>
 
@@ -364,9 +395,9 @@ Trade Hour</a>
 </div>
 </footer>
 
-<button id="chatBtn" type="button" aria-controls="chat" aria-expanded="false"><span class="live"></span>Questions? Ask us</button>
-<section id="chat" role="dialog" aria-label="Trade Hour assistant" hidden>
-<div class="ch-head"><b>Trade Hour assistant</b><button class="ch-x" id="chatX" aria-label="Close chat">×</button></div>
+<button id="chatBtn" type="button" aria-controls="chat" aria-expanded="false"><span class="live"></span>Questions? Ask Elon</button>
+<section id="chat" role="dialog" aria-label="Elon, the Trade Hour assistant" hidden>
+<div class="ch-head"><b>Elon · Trade Hour assistant</b><button class="ch-x" id="chatX" aria-label="Close chat">×</button></div>
 <div id="chatLog" aria-live="polite"></div>
 <form class="ch-form" id="chatForm"><input id="chatIn" autocomplete="off" maxlength="600" placeholder="Ask about the tools, EXD, switching…" aria-label="Your question"><button type="submit">Send</button></form>
 <p class="ch-foot">Education and tools only, not advice. Never share passwords or API keys here.</p>
@@ -412,7 +443,10 @@ renderSteps();
 
 fetch('/api/public/config').then(r=>r.ok?r.json():null).then(c=>{if(!c)return;SERVER=true;
  if(c.partner_link&&!code)LINK=c.partner_link;
- if(c.exd_amount)$('exdAmount').textContent=c.exd_amount+' EXD';
+ if(c.exd_amount){$('exdAmount').textContent=c.exd_amount+' EXD';document.querySelectorAll('[data-exd]').forEach(e=>e.textContent=c.exd_amount)}
+ if(Array.isArray(c.milestones)&&c.milestones.length){const n=v=>Number(v).toLocaleString('en-US');
+  $('msList').innerHTML=c.milestones.map((m,i)=>`<li style="--i:${i}"><span class="mono">Milestone ${i+1}</span><b>${n(m.lots)} lot${m.lots===1?'':'s'}</b><em>+${n(m.exd)} EXD</em></li>`).join('');
+  $('msTotal').textContent=n(c.milestones.reduce((s,m)=>s+m.exd,0))+' EXD'}
  if(c.exd_terms)$('exdTerms').textContent=c.exd_terms;}).catch(()=>{});
 fetch('/api/public/faq').then(r=>r.ok?r.json():null).then(d=>{if(!d)return;STEPS=d.switch_steps;renderSteps();
  FAQ=d.faq.map(x=>({q:x.q,k:x.q,a:x.a}))}).catch(()=>{});
@@ -450,7 +484,7 @@ function add(who,html,chips){const d=document.createElement('div');d.className='
  if(chips&&chips.length){const c=document.createElement('div');c.className='chips';chips.forEach(([l,fn])=>{const b=document.createElement('button');b.type='button';b.className='chip';b.textContent=l;b.onclick=()=>{c.remove();fn()};c.appendChild(b)});log.appendChild(c)}
  log.scrollTop=log.scrollHeight;return d}
 const MENU=()=>[["What tools do I get?",()=>ask("What tools do I get?")],["What is the EXD reward?",()=>ask("What is the EXD reward?")],["I already trade with Exness",startSwitch],["How do I sign up?",()=>ask("How do I sign up?")]];
-function greet(){add('bot',"Hi! I can answer questions about Trade Hour, our tools, the EXD reward and milestones, or help you move an existing Exness account to us. What would you like to know?",MENU())}
+function greet(){add('bot',"Hi, I'm Elon! I can answer questions about Trade Hour, our tools, the EXD reward and milestones, or help you move an existing Exness account to us. What would you like to know?",MENU())}
 function startSwitch(){if($('chat').hidden){$('chat').hidden=false;$('chatBtn').setAttribute('aria-expanded','true');greeted=true}
  choose('switch');stepI=-1;add('bot',"Great, you can keep your Exness account. Exness lets clients ask to change their partner, and it takes a few minutes on your side. Ready for step 1?",[["Yes, show me",nextStep],["Will I lose my trades or money?",()=>ask("If I change partner, do I lose my account, trades or money?")]])}
 function nextStep(){stepI++;if(stepI<STEPS.length){const last=stepI===STEPS.length-1;add('bot',`<b>Step ${stepI+1} of ${STEPS.length}</b>\n${linkify(STEPS[stepI])}`,last?[["Register my switch",()=>{closeChat();$('join').scrollIntoView({behavior:'smooth'});setTimeout(()=>f.elements.name.focus(),400)}],["I have a question",()=>$('chatIn').focus()]]:[["Done, next step",nextStep],["I have a question",()=>$('chatIn').focus()]])}}

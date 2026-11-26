@@ -1,5 +1,6 @@
 """Tiny .env loader (no python-dotenv dependency) and shared settings."""
 import os
+import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -13,7 +14,12 @@ def load_env(path: Path = ROOT / ".env") -> None:
         if not line or line.startswith("#") or "=" not in line:
             continue
         k, v = line.split("=", 1)
-        os.environ.setdefault(k.strip(), v.strip().strip('"').strip("'"))
+        v = v.strip()
+        if v[:1] in ('"', "'") and v[0] in v[1:]:  # quoted: keep everything inside the quotes
+            v = v[1:v.index(v[0], 1)]
+        else:  # unquoted: drop an inline " # comment"
+            v = re.split(r"\s+#", v, maxsplit=1)[0].strip() if not v.startswith("#") else ""
+        os.environ.setdefault(k.strip(), v)
 
 
 load_env()
